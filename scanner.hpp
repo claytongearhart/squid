@@ -1,33 +1,44 @@
 #include <algorithm>
 #include <fstream>
+#include <iostream>
 #include <iterator>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
+bool isSpace(unsigned char c)
+{
+  return (c == ' ' || c == '\n' || c == '\r' || c == '\t' || c == '\v' ||
+          c == '\f');
+}
+template <class object> bool isInArray(const object a[], object o)
+{
+  int length = sizeof(a) / sizeof(a[0]);
+  for (int i = 0; i < length; i++)
+  {
+    if (o == a[i])
+    {
+      return true;
+    }
+  }
+
+  return false;
+}
 enum tokenTypes
 {
   boolToken,
   digitToken,
   keywordToken,
   operatorToken,
-  stringToken
+  stringToken,
+  other
 };
-
-std::vector<std::pair<tokenTypes, std::string>> scan(std::string &input)
-{
-}
 
 class scanner
 {
 private:
-  template <class haystack>
-  bool isInArray(haystack &haystack, std::string needle)
-  {
-    return std::find(std::begin(haystack), std::end(haystack), needle) !=
-           std::end(haystack);
-  }
-
+  std::vector<std::string> tokenValues;
   bool isDigit(const std::string &input)
   {
     return std::all_of(input.begin(), input.end(), ::isdigit);
@@ -35,7 +46,7 @@ private:
 
   bool isString(const std::string &input)
   {
-    return input[0] == '""' && input[input.size() - 1] == '""';
+    return input[0] == '\"' && input[input.size() - 1] == '\"';
   }
 
   void sanatize(std::string &input)
@@ -50,7 +61,7 @@ private:
       i++;
     }
   }
-  tokenTypes tokenType(std::string &token)
+  tokenTypes tokenType(std::string token)
   {
     const std::string boolTokens[] = {"true", "false"},
 
@@ -84,86 +95,61 @@ private:
     {
       return digitToken;
     }
+    return other;
   }
 
 public:
-  tokenTypes tokenType(std::string &token)
+  std::vector<std::pair<tokenTypes, std::string>> fullTokens;
+
+  void split(std::string const &s, std::vector<std::string> &values)
   {
-    const std::string boolTokens[] = {"true", "false"},
+    const char delims[] = {'\n', ' ', '(', ')'};
+    std::vector<int> delimLocations;
 
-                      delimiterTokens[] = {"(", ")", "{", "}", ";", ","},
-
-                      keywordTokens[] = {"int",    "float", "auto",
-                                         "double", "do",    "switch",
-                                         "return"},
-
-                      operatorTokens[] = {
-                          "<", ">",  "<=", ">=", "*",  "+",  "-",  "/",
-                          "=", "-=", "*=", "+=", "/=", "++", "--", "=="};
-
-    if (isInArray(boolTokens, token))
+    for (int i = 0; i < s.size(); i++)
     {
-      return boolToken;
-    }
-    else if (isInArray(keywordTokens, token))
-    {
-      return keywordToken;
-    }
-    else if (isInArray(operatorTokens, token))
-    {
-      return operatorToken;
-    }
-    else if (isString(token))
-    {
-      return stringToken;
-    }
-    else if (isDigit(token))
-    {
-      return digitToken;
-    }
-  }
-
-  template <typename C>
-void split(std::string const &s, char const *d, C &ret)
-{
-  C output;
-
-  std::bitset<255> delims;
-  while (*d)
-  {
-    unsigned char code = *d++;
-    delims[code] = true;
-  }
-  typedef std::string::const_iterator iter;
-  iter beg;
-  bool in_token = false;
-  for (std::string::const_iterator it = s.begin(), end = s.end();
-       it != end; ++it)
-  {
-    if (delims[*it])
-    {
-      if (in_token)
+      if (isInArray(delims, s[i]))
       {
-        output.push_back(typename C::value_type(beg, it));
-        in_token = false;
+        delimLocations.push_back(i);
       }
     }
-    else if (!in_token)
+    for (int i = 0; i < delimLocations.size(); i++)
     {
-      beg = it;
-      in_token = true;
+      values.push_back(s.substr(delimLocations[i], delimLocations[i + 1] -
+                                                       delimLocations[i]));
     }
   }
-  if (in_token)
-    output.push_back(typename C::value_type(beg, s.end()));
-  output.swap(ret);
-}
 
 public:
-  void analyze(const std::string &input)
+  void analyze(const std::string input)
   {
-    char const* delims = " \t,()";
-    std::vector<std::string_view> rawTokens;
-    split(input, delims, rawTokens);
+    std::vector<std::string> rawTokens;
+    split(input, rawTokens);
+    tokenValues = rawTokens;
+    sanatizeTokens();
+    calcTypes();
+  }
+
+  void calcTypes()
+  {
+    for (int i = 0; i < tokenValues.size(); i++)
+    {
+      fullTokens.push_back(
+          std::make_pair(tokenType(tokenValues[i]), tokenValues[i]));
+    }
+  }
+
+  void sanatizeTokens()
+  {
+    for (int i = 0; i < tokenValues.size(); i++)
+    {
+      tokenValues[i].erase(std::remove_if(tokenValues[i].begin(),
+                                          tokenValues[i].end(), isSpace),
+                           tokenValues[i].end());
+      if (tokenValues[i] == "")
+      {
+        tokenValues.erase(tokenValues.begin() + i);
+      }
+    }
   }
 };

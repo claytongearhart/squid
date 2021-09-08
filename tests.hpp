@@ -1,7 +1,7 @@
 // A list of functions made for testing, do not delete as may submit in
 // final assmem
 
-template <typename C>
+template <typename source>
 void split(std::string const &s, char const *d, C &ret)
 {
   C output;
