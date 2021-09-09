@@ -1,3 +1,4 @@
+#include "utils.hpp"
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -6,34 +7,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-
-bool isSpace(unsigned char c)
-{
-  return (c == ' ' || c == '\n' || c == '\r' || c == '\t' || c == '\v' ||
-          c == '\f');
-}
-template <class object> bool isInArray(const object a[], object o)
-{
-  int length = sizeof(a) / sizeof(a[0]);
-  for (int i = 0; i < length; i++)
-  {
-    if (o == a[i])
-    {
-      return true;
-    }
-  }
-
-  return false;
-}
-enum tokenTypes
-{
-  boolToken,
-  digitToken,
-  keywordToken,
-  operatorToken,
-  stringToken,
-  other
-};
 
 class scanner
 {
@@ -61,7 +34,7 @@ private:
       i++;
     }
   }
-  tokenTypes tokenType(std::string token)
+  squid::tokenTypes tokenType(std::string token)
   {
     const std::string boolTokens[] = {"true", "false"},
 
@@ -75,44 +48,45 @@ private:
                           "<", ">",  "<=", ">=", "*",  "+",  "-",  "/",
                           "=", "-=", "*=", "+=", "/=", "++", "--", "=="};
 
-    if (isInArray(boolTokens, token))
+    if (squid::utils::isInArray(boolTokens, token))
     {
-      return boolToken;
+      return squid::boolToken;
     }
-    else if (isInArray(keywordTokens, token))
+    else if (squid::utils::isInArray(keywordTokens, token))
     {
-      return keywordToken;
+      return squid::keywordToken;
     }
-    else if (isInArray(operatorTokens, token))
+    else if (squid::utils::isInArray(operatorTokens, token))
     {
-      return operatorToken;
+      return squid::operatorToken;
     }
     else if (isString(token))
     {
-      return stringToken;
+      return squid::stringToken;
     }
     else if (isDigit(token))
     {
-      return digitToken;
+      return squid::digitToken;
     }
-    return other;
+    return squid::other;
   }
 
 public:
-  std::vector<std::pair<tokenTypes, std::string>> fullTokens;
+  std::vector<std::pair<squid::tokenTypes, std::string>> fullTokens;
 
   void split(std::string const &s, std::vector<std::string> &values)
   {
-    const char delims[] = {'\n', ' ', '(', ')'};
+    const char delims[] = {'\n', ' ', '(', ')', ';'};
     std::vector<int> delimLocations;
 
     for (int i = 0; i < s.size(); i++)
     {
-      if (isInArray(delims, s[i]))
+      if (squid::utils::isInArray(delims, s[i]))
       {
         delimLocations.push_back(i);
       }
     }
+    values.push_back(s.substr(0, delimLocations[0]));
     for (int i = 0; i < delimLocations.size(); i++)
     {
       values.push_back(s.substr(delimLocations[i], delimLocations[i + 1] -
@@ -144,7 +118,8 @@ public:
     for (int i = 0; i < tokenValues.size(); i++)
     {
       tokenValues[i].erase(std::remove_if(tokenValues[i].begin(),
-                                          tokenValues[i].end(), isSpace),
+                                          tokenValues[i].end(),
+                                          squid::utils::isSpace),
                            tokenValues[i].end());
       if (tokenValues[i] == "")
       {

@@ -47,6 +47,7 @@
         "xstddef": "cpp",
         "xtr1common": "cpp",
         "set": "cpp",
-        "xtree": "cpp"
+        "xtree": "cpp",
+        "*.tcc": "cpp"
     }
 }
