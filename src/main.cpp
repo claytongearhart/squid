@@ -1,7 +1,7 @@
 #include <fstream>
 #include <iostream>
 #include "scanner.hpp"
-#include "tree.hpp"
+#include "../lib/tree.hpp"
 #include "console.hpp"
 
 int main()
