@@ -22,15 +22,17 @@ int main()
     }
 
     // Find main function
-    unsigned int mainAt = NULL;
+    unsigned int mainAt;
+    bool mainExist;
     for (int i = 0; i < tokenList.size(); i++)
     {
-        if (tokenList[i].value == "int" && tokenList[i + 1].value == "main")
+        if (tokenList[i].value == "int" && tokenList[i].type == squid::keywordToken && tokenList[i + 1].value == "main")
         {
             mainAt = i + 1;
+            bool mainExist = true;
         } 
     }
-    if (mainAt == NULL)
+    if (mainExist)
     {
         appConsole.error("No entry point.");
     }

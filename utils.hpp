@@ -1,9 +1,10 @@
 #include <algorithm>
+#include <string.h>
 #include <string>
 #include <tuple>
+#include <array>
 #include <type_traits>
 #include <variant>
-#include <string.h>
 #include <vector>
 
 namespace squid
@@ -43,17 +44,10 @@ bool isSpace(unsigned char c)
           c == '\f');
 }
 
-bool isInStringArray(const std::string a[], std::string o)
+bool isInStringVec(std::vector<std::string> a, std::string o)
 {
-  for (int i = 0; i < a->size(); i++)
-  {
-    if (o == a[i])
-    {
-      return true;
-    }
-  }
+  return std::find(a.begin(), a.end(), o) != a.end();
 
-  return false;
 }
 bool isInCharArray(const char a[], const char o)
 {

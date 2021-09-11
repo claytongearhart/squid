@@ -11,14 +11,14 @@
 class scanner
 {
 private:
-  const std::string boolTokens[2] = {"true", "false"},
+  std::vector<std::string> boolTokens = {"true", "false"},
 
-                    delimiterTokens[6] = {"(", ")", "{", "}", ";", ","},
+                    delimiterTokens = {"(", ")", "{", "}", ";", ","},
 
-                    keywordTokens[7] = {"int", "float",  "auto",  "double",
+                    keywordTokens = {"int", "float",  "auto",  "double",
                                         "do",  "switch", "return"},
 
-                    operatorTokens[16] = {
+                    operatorTokens = {
                         "<", ">",  "<=", ">=", "*",  "+",  "-",  "/",
                         "=", "-=", "*=", "+=", "/=", "++", "--", "=="};
   std::vector<std::string> tokenValues;
@@ -47,13 +47,13 @@ private:
   squid::tokenTypes tokenType(std::string token)
   {
 
-    return squid::utils::isInStringArray(boolTokens, token)
+    return squid::utils::isInStringVec(operatorTokens, token)
                ? squid::boolToken
-           : squid::utils::isInStringArray(delimiterTokens, token)
+           : squid::utils::isInStringVec(delimiterTokens, token)
                ? squid::delimiterToken
-           : squid::utils::isInStringArray(keywordTokens, token)
+           : squid::utils::isInStringVec(keywordTokens, token)
                ? squid::keywordToken
-           : squid::utils::isInStringArray(operatorTokens, token)
+           : squid::utils::isInStringVec(boolTokens, token)
                ? squid::operatorToken
            : isString(token) ? squid::stringToken
            : isDigit(token)  ? squid::digitToken
