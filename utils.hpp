@@ -1,7 +1,10 @@
+#include <algorithm>
+#include <string>
+#include <tuple>
 #include <type_traits>
 #include <variant>
+#include <string.h>
 #include <vector>
-#include <string>
 
 namespace squid
 {
@@ -9,6 +12,7 @@ namespace squid
 enum tokenTypes
 {
   boolToken,
+  delimiterToken,
   digitToken,
   keywordToken,
   operatorToken,
@@ -16,6 +20,20 @@ enum tokenTypes
   other
 };
 
+class token
+{
+public:
+  tokenTypes type;
+  int location;
+  std::string value;
+
+  token(tokenTypes inputType, std::string inputValue, int inputLocation)
+  {
+    type = inputType;
+    value = inputValue;
+    location = inputLocation;
+  }
+};
 
 namespace utils
 {
@@ -25,10 +43,21 @@ bool isSpace(unsigned char c)
           c == '\f');
 }
 
-template <class object> bool isInArray(const object a[], object o)
+bool isInStringArray(const std::string a[], std::string o)
 {
-  int length = sizeof(a) / sizeof(a[0]);
-  for (int i = 0; i < length; i++)
+  for (int i = 0; i < a->size(); i++)
+  {
+    if (o == a[i])
+    {
+      return true;
+    }
+  }
+
+  return false;
+}
+bool isInCharArray(const char a[], const char o)
+{
+  for (int i = 0; i < strlen(a); i++)
   {
     if (o == a[i])
     {

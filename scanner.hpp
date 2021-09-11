@@ -11,6 +11,16 @@
 class scanner
 {
 private:
+  const std::string boolTokens[2] = {"true", "false"},
+
+                    delimiterTokens[6] = {"(", ")", "{", "}", ";", ","},
+
+                    keywordTokens[7] = {"int", "float",  "auto",  "double",
+                                        "do",  "switch", "return"},
+
+                    operatorTokens[16] = {
+                        "<", ">",  "<=", ">=", "*",  "+",  "-",  "/",
+                        "=", "-=", "*=", "+=", "/=", "++", "--", "=="};
   std::vector<std::string> tokenValues;
   bool isDigit(const std::string &input)
   {
@@ -36,43 +46,22 @@ private:
   }
   squid::tokenTypes tokenType(std::string token)
   {
-    const std::string boolTokens[] = {"true", "false"},
 
-                      delimiterTokens[] = {"(", ")", "{", "}", ";", ","},
-
-                      keywordTokens[] = {"int",    "float", "auto",
-                                         "double", "do",    "switch",
-                                         "return"},
-
-                      operatorTokens[] = {
-                          "<", ">",  "<=", ">=", "*",  "+",  "-",  "/",
-                          "=", "-=", "*=", "+=", "/=", "++", "--", "=="};
-
-    if (squid::utils::isInArray(boolTokens, token))
-    {
-      return squid::boolToken;
-    }
-    else if (squid::utils::isInArray(keywordTokens, token))
-    {
-      return squid::keywordToken;
-    }
-    else if (squid::utils::isInArray(operatorTokens, token))
-    {
-      return squid::operatorToken;
-    }
-    else if (isString(token))
-    {
-      return squid::stringToken;
-    }
-    else if (isDigit(token))
-    {
-      return squid::digitToken;
-    }
-    return squid::other;
+    return squid::utils::isInStringArray(boolTokens, token)
+               ? squid::boolToken
+           : squid::utils::isInStringArray(delimiterTokens, token)
+               ? squid::delimiterToken
+           : squid::utils::isInStringArray(keywordTokens, token)
+               ? squid::keywordToken
+           : squid::utils::isInStringArray(operatorTokens, token)
+               ? squid::operatorToken
+           : isString(token) ? squid::stringToken
+           : isDigit(token)  ? squid::digitToken
+                             : squid::other;
   }
 
 public:
-  std::vector<std::pair<squid::tokenTypes, std::string>> fullTokens;
+  std::vector<squid::token> fullTokens;
 
   void split(std::string const &s, std::vector<std::string> &values)
   {
@@ -81,7 +70,7 @@ public:
 
     for (int i = 0; i < s.size(); i++)
     {
-      if (squid::utils::isInArray(delims, s[i]))
+      if (squid::utils::isInCharArray(delims, s[i]))
       {
         delimLocations.push_back(i);
       }
@@ -93,8 +82,6 @@ public:
                                                        delimLocations[i]));
     }
   }
-
-public:
   void analyze(const std::string input)
   {
     std::vector<std::string> rawTokens;
@@ -108,8 +95,7 @@ public:
   {
     for (int i = 0; i < tokenValues.size(); i++)
     {
-      fullTokens.push_back(
-          std::make_pair(tokenType(tokenValues[i]), tokenValues[i]));
+      fullTokens.push_back({tokenType(tokenValues[i]), tokenValues[i], 1});
     }
   }
 
