@@ -1,4 +1,4 @@
 int main()
 {
-    std::cout<<"Penis";
+    std::cout<<"Hello, World!";
 }
