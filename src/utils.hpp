@@ -10,6 +10,15 @@
 namespace squid
 {
 
+struct bracket
+{
+  int position;
+  bool isOpener;
+
+  bracket(int p, bool iO) : position{p}, isOpener{iO}
+  {} 
+};
+
 enum tokenTypes
 {
   boolToken,

@@ -21,19 +21,34 @@ int main()
         std::cout << tokenList[i].value << " : " << tokenList[i].type << '\n';
     }
 
-    // Find main function
     unsigned int mainAt;
     bool mainExist;
+
+    std::vector <squid::bracket> bracketLocations;
+
     for (int i = 0; i < tokenList.size(); i++)
     {
         if (tokenList[i].value == "int" && tokenList[i].type == squid::keywordToken && tokenList[i + 1].value == "main")
         {
             mainAt = i + 1;
             bool mainExist = true;
-        } 
+        }
+        // Search for braces
+        if (tokenList[i].value == "{" && tokenList[i].type == squid::delimiterToken)
+        {
+            bracketLocations.emplace_back(squid::bracket(i, true));
+        }
+        if (tokenList[i].value == "{" && tokenList[i].type == squid::delimiterToken)
+        {
+            bracketLocations.emplace_back(squid::bracket(i, false));
+        }
     }
     if (mainExist)
     {
         appConsole.error("No entry point.");
     }
+
+
+    
+
 }

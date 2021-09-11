@@ -75,10 +75,10 @@ public:
         delimLocations.push_back(i);
       }
     }
-    values.push_back(s.substr(0, delimLocations[0]));
+    values.emplace_back(s.substr(0, delimLocations[0]));
     for (int i = 0; i < delimLocations.size(); i++)
     {
-      values.push_back(s.substr(delimLocations[i], delimLocations[i + 1] -
+      values.emplace_back(s.substr(delimLocations[i], delimLocations[i + 1] -
                                                        delimLocations[i]));
     }
   }
