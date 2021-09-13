@@ -17,3 +17,6 @@ Cleaned up if else chain in the token check system. Started fixing token detecto
 
 ### 2021-9-11 3 Hours
 Fixed `isInArray` function, is now working as expected, however switched to vectors instead of arrays do to pointer mess. Organized repo, moved docs from Notion to markdown hosted in this repo. Switched `push_back` to `emplace_back` where useful, greatly improved peformance.
+
+### 2021-9-13 1.5 Hours
+Fixed `sanatizeTokens` function so it no longer removes spaces inside string, created `stringLocations` and `isInString` functions to aid the `sanatizeTokens` function and others, may use to make an more optimized token generator.
