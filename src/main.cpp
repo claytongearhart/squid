@@ -1,11 +1,10 @@
 #include "../lib/tree.hpp"
 #include "console.hpp"
 #include "scanner.hpp"
-#include <fstream>
 #include <algorithm>
+#include <fstream>
 #include <iostream>
 #include <stdint.h>
-
 
 int main()
 {
@@ -47,31 +46,6 @@ int main()
         tokenList[i].type == squid::delimiterToken)
     {
       bracketLocations.emplace_back(squid::bracket(i, false));
-    }
-  }
-
-  tree<squid::token> scopeTree;
-  std::vector<tree<squid::token>::iterator> scopeTreeNodes = {
-      scopeTree.begin(), scopeTree.insert(scopeTreeNodes[0], {squid::token(squid::other, "ROOT", 0)})};
-  uint8_t scopeDepth = 0;
-  for (int i = 1; i < bracketLocations.size(); i++)
-  {
-    if (bracketLocations[i].isOpener)
-    {
-      scopeDepth++;
-    }
-    else
-    {
-      scopeDepth--;
-    }
-
-    for (int j = 0; j < bracketLocations[i + 1].position -
-                            bracketLocations[i].position;
-         j++)
-    {
-      scopeTreeNodes[i] = scopeTree.append_child(
-          scopeTreeNodes[scopeDepth],
-          tokenList[bracketLocations[i].position + j]);
     }
   }
 }

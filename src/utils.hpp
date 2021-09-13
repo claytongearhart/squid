@@ -36,6 +36,7 @@ public:
   tokenTypes type;
   int location;
   std::string value;
+  std::string scopeDepth;
 
   token(tokenTypes inputType, std::string inputValue, int inputLocation)
   {
