@@ -82,7 +82,7 @@ private:
 
     void split(std::string const &s, std::vector<std::pair<std::string, int>> &values)
     {
-      const char delims[] = {'\n', ' ', '(', ')', ';'};
+      const char delims[] = {'\n', ' ', '(', ')', ';', '<', '>', '+', '-', '/', '*', '\"', '[', ']', '{', '}', '&'};
       std::vector<int> delimLocations;
 
       for (int i = 0; i < s.size(); i++)

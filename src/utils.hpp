@@ -1,8 +1,8 @@
 #include <algorithm>
+#include <array>
 #include <string.h>
 #include <string>
 #include <tuple>
-#include <array>
 #include <type_traits>
 #include <variant>
 #include <vector>
@@ -16,7 +16,8 @@ struct bracket
   bool isOpener;
 
   bracket(int p, bool iO) : position{p}, isOpener{iO}
-  {} 
+  {
+  }
 };
 
 enum tokenTypes
@@ -57,7 +58,6 @@ bool isSpace(unsigned char c)
 bool isInStringVec(std::vector<std::string> a, std::string o)
 {
   return std::find(a.begin(), a.end(), o) != a.end();
-
 }
 bool isInCharArray(const char a[], const char o)
 {
