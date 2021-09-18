@@ -34,18 +34,19 @@ private:
   }
   void findStrings(std::string input)
   {
-    std::vector <int> quoteLocations;
+    std::vector<int> quoteLocations;
 
     for (int i = 0; i < input.size(); i++)
     {
-      if (input[i] == '\"' || input[i] == '\'')
+      if (input[i] == '\"' || input[i] == '\'' && input[i-1] != '\\' )
       {
         quoteLocations.push_back(i);
       }
     }
     for (int i = 0; i < quoteLocations.size(); i += 2)
     {
-      stringLocations.emplace_back(std::make_pair(quoteLocations[i], quoteLocations[i + 1]));
+      stringLocations.emplace_back(
+          std::make_pair(quoteLocations[i], quoteLocations[i + 1]));
     }
   }
 
@@ -53,7 +54,8 @@ private:
   {
     for (int i = 0; i < stringLocations.size(); i++)
     {
-      if (stringLocations[i].first < location && location < stringLocations[i].second)
+      if (stringLocations[i].first < location &&
+          location < stringLocations[i].second)
       {
         return true;
       }
@@ -61,78 +63,74 @@ private:
     return false;
   }
 
-    squid::tokenTypes tokenType(std::string token)
-    {
+  squid::tokenTypes tokenType(std::string token)
+  {
 
-      return squid::utils::isInStringVec(operatorTokens, token)
-                 ? squid::boolToken
-             : squid::utils::isInStringVec(delimiterTokens, token)
-                 ? squid::delimiterToken
-             : squid::utils::isInStringVec(keywordTokens, token)
-                 ? squid::keywordToken
-             : squid::utils::isInStringVec(boolTokens, token)
-                 ? squid::operatorToken
-             : isString(token) ? squid::stringToken
-             : isDigit(token)  ? squid::digitToken
-                               : squid::other;
+    return squid::utils::isInStringVec(operatorTokens, token)
+               ? squid::boolToken
+           : squid::utils::isInStringVec(delimiterTokens, token)
+               ? squid::delimiterToken
+           : squid::utils::isInStringVec(keywordTokens, token)
+               ? squid::keywordToken
+           : squid::utils::isInStringVec(boolTokens, token)
+               ? squid::operatorToken
+           : isString(token) ? squid::stringToken
+           : isDigit(token)  ? squid::digitToken
+                             : squid::other;
+  }
+
+public:
+  std::vector<squid::token> fullTokens;
+
+  std::vector<std::pair<std::string, int>> split(std::string s)
+  {
+    std::vector<std::pair<std::string, int>> values;
+    size_t pos = 0, lastPos = 0;
+    while ((pos = s.find_first_of(" []{}()<>+-*/&:.\n\"", lastPos)) !=
+           std::string::npos)
+    {
+      values.emplace_back(std::make_pair(
+          s.substr(lastPos, pos - lastPos + 1), pos));
+      lastPos = pos + 1;
     }
+    values.emplace_back(
+        std::make_pair(s.substr(lastPos), pos));
 
-  public:
-    std::vector<squid::token> fullTokens;
+    return values;
+  }
+  void analyze(std::string input)
+  {
+    findStrings(input);
+    tokenValues = split(input);
+     sanatizeTokens();
+    calcTypes();
+  }
 
-    void split(std::string const s, std::vector<std::pair<std::string, int>> &values)
+  void calcTypes()
+  {
+    for (int i = 0; i < tokenValues.size(); i++)
     {
-      const char delims[] = {'\n', ' ', '(', ')', ';', '<', '>', '+', '-', '/', '*', '\"', '[', ']', '{', '}', '&', ':'};
-      std::vector<int> delimLocations;
+      fullTokens.push_back(
+          {tokenType(tokenValues[i].first), tokenValues[i].first, 1});
+    }
+  }
 
-      for (int i = 0; i < s.size(); i++)
+  void sanatizeTokens()
+  {
+    for (int i = 0; i < tokenValues.size(); i++)
+    {
+      for (int j = 0; j < tokenValues[i].first.size(); j++)
       {
-        if (squid::utils::isInCharArray(delims, s[i]) && !isInString(i))
+        if (squid::utils::isSpace(tokenValues[i].first[j]) &&
+            !isInString(tokenValues[i].second + j)) //
         {
-          delimLocations.push_back(i);
+          tokenValues[i].first.erase(j, 1);
         }
       }
-      values.emplace_back(std::make_pair(s.substr(0, delimLocations[0]), 0));
-      for (int i = 0; i < delimLocations.size(); i++)
+      if (tokenValues[i].first == "")
       {
-        values.emplace_back(std::make_pair(s.substr(
-            delimLocations[i], delimLocations[i + 1] - delimLocations[i]), delimLocations[i]));
+        tokenValues.erase(tokenValues.begin() + i);
       }
     }
-    void analyze(std::string input)
-    {
-      std::vector<std::pair<std::string, int>> rawTokens;
-      findStrings(input);
-      split(input, rawTokens);
-      tokenValues = rawTokens;
-      sanatizeTokens();
-      calcTypes();
-    }
-
-    void calcTypes()
-    {
-      for (int i = 0; i < tokenValues.size(); i++)
-      {
-        fullTokens.push_back(
-            {tokenType(tokenValues[i].first), tokenValues[i].first, 1});
-      }
-    }
-
-    void sanatizeTokens()
-    {
-      for (int i = 0; i < tokenValues.size(); i++)
-      {
-        for (int j = 0; j < tokenValues[i].first.size(); j++)
-        {
-          if (squid::utils::isSpace(tokenValues[i].first[j]) && !isInString(tokenValues[i].second + j)) // 
-          {
-            tokenValues[i].first.erase(j, 1);
-          }
-        }
-        if (tokenValues[i].first == "")
-        {
-          tokenValues.erase(tokenValues.begin() + i);
-        }
-      }
-    }
-  };
+  }
+};
