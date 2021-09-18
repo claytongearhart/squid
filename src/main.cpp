@@ -15,6 +15,8 @@ int main()
     std::string sourceString((std::istreambuf_iterator<char>(source)),
                              std::istreambuf_iterator<char>());
 
+    sourceString = "int main()\n{\nstd::cout<<\"Hello, World!\"\n;}";
+
     mainScanner.analyze(sourceString);
     auto tokenList = mainScanner.fullTokens;
     for (int i = 0; i < tokenList.size(); i++)

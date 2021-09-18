@@ -80,7 +80,7 @@ private:
   public:
     std::vector<squid::token> fullTokens;
 
-    void split(std::string const &s, std::vector<std::pair<std::string, int>> &values)
+    void split(std::string const s, std::vector<std::pair<std::string, int>> &values)
     {
       const char delims[] = {'\n', ' ', '(', ')', ';', '<', '>', '+', '-', '/', '*', '\"', '[', ']', '{', '}', '&', ':'};
       std::vector<int> delimLocations;
