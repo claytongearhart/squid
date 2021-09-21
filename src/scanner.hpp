@@ -3,7 +3,9 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
+#include <numeric>
 #include <set>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -39,7 +41,8 @@ class scanner
         for (int i = 0; i < input.size(); i++)
         {
             if (input[i] == '\"' ||
-                input[i] == '\'' && input[i - 1] != '\\')
+                input[i] == '\''&&
+                    input[i - 1] != '\\')
             {
                 quoteLocations.push_back(i);
             }
@@ -64,6 +67,41 @@ class scanner
         return false;
     }
 
+    // void fixStrings()
+    // {
+    //     std::vector<squid::token> tempTokenList;
+    //     findStrings();
+
+    //     // for (int i = 0; i < fullTokens.size(); i++)
+    //     // {
+    //     //     if (isInString(i))
+    //     //     {
+    //     //         std::string newToken =
+    //     //             fullTokens[i].value + fullTokens[i + 1].value;
+    //     //         tempTokenList.push_back({squid::stringToken, newToken,
+    //     //                                  fullTokens[i].location});
+    //     //         i++;
+    //     //     }
+    //     //     else
+    //     //     {
+    //     //         tempTokenList.push_back({tokenType(fullTokens[i].value),
+    //     //                                  fullTokens[i].value,
+    //     //                                  fullTokens[i].location});
+    //     //     }
+    //     // }
+    //     std::stringstream ss;
+    //     std::vector <std::string> stringVec;
+    //     for (int i = 0; i < stringLocations.size(); i++)
+    //     {
+    //         std::for_each(
+    //             fullTokens.begin() + stringLocations[i].first,
+    //             fullTokens.begin() + stringLocations[i].second,
+    //             [&i, &stringVec](const std::string &s) { stringVec[i] += s; });
+    //     }
+
+    //     fullTokens = tempTokenList;
+    // }
+
     squid::tokenTypes tokenType(std::string token)
     {
 
@@ -87,15 +125,20 @@ class scanner
         {
             if (!(fullTokens[i].value.length() == 1))
             {
-              auto beginTokenValue = fullTokens[i].value.substr(0, fullTokens[i].value.size() - 1);
-              std::string lastTokenValue(1, fullTokens[i].value.back()); 
+                auto beginTokenValue = fullTokens[i].value.substr(
+                    0, fullTokens[i].value.size() - 1);
+                std::string lastTokenValue(1, fullTokens[i].value.back());
 
-              tempFullTokens.push_back({tokenType(beginTokenValue), beginTokenValue, fullTokens[i].location});
-              tempFullTokens.push_back({tokenType(lastTokenValue), lastTokenValue, fullTokens[i].location});
+                tempFullTokens.push_back({tokenType(beginTokenValue),
+                                          beginTokenValue,
+                                          fullTokens[i].location});
+                tempFullTokens.push_back({tokenType(lastTokenValue),
+                                          lastTokenValue,
+                                          fullTokens[i].location});
             }
             else
             {
-              tempFullTokens.push_back(fullTokens[i]);
+                tempFullTokens.push_back(fullTokens[i]);
             }
         }
         fullTokens = tempFullTokens;
@@ -108,11 +151,15 @@ class scanner
     {
         std::vector<std::pair<std::string, int>> values;
         size_t pos = 0, lastPos = 0;
-        while ((pos = s.find_first_of(" []{}()<>+-*/&:.\n\"", lastPos)) !=
+        while ((pos = s.find_first_of(" []{}()<>+-*/&:.\n\"", lastPos)) != // Make wrapper function of find_first_of to check if is in string or not
                std::string::npos)
         {
+            if (!isInString(lastPos))
+            {
             values.emplace_back(
                 std::make_pair(s.substr(lastPos, pos - lastPos + 1), pos));
+            
+            }
             lastPos = pos + 1;
         }
         values.emplace_back(std::make_pair(s.substr(lastPos), pos));
@@ -121,11 +168,12 @@ class scanner
     }
     void analyze(std::string input)
     {
-        findStrings(input);
         tokenValues = split(input);
         calcTypes();
         refineTokens();
-        sanatizeTokens();
+        findStrings(input);
+        // sanatizeTokens();
+        // findStrings();
     }
 
     void calcTypes()
