@@ -20,3 +20,9 @@ Fixed `isInArray` function, is now working as expected, however switched to vect
 
 ### 2021-9-13 1.5 Hours
 Fixed `sanatizeTokens` function so it no longer removes spaces inside string, created `stringLocations` and `isInString` functions to aid the `sanatizeTokens` function and others, may use to make an more optimized token generator.
+
+### 20212-9-20 - 2 Hours
+Worked on ways to fix strings, did not succed. Although did learn the ins and outs of a lot of std memebers
+
+### 2021-9-21 - 1 Hour
+Contiuned to work on ways to fix strings, did not succed but came of with idea to work on, when I have time.
