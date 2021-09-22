@@ -66,24 +66,21 @@ class scanner
         return false;
     }
 
-    size_t find_first_of_delim(std::string input, std::string delims, size_t lastPos)
+    size_t find_first_of_delim(std::string input, std::string delims,
+                               size_t lastPos)
     {
-        std::string delims = " []{}()<>+-*/&:.\n\"\'";
+        size_t numInString = 0; 
 
-        for (int j = 0; j < delims.size(); j++)
+        for (int i = lastPos; i < input.size(); i++)
         {
-            if (delims[j] != c)
-            {
-                return false;
-            }
+            if ((delims.find(input[i]) != std::string::npos)
+                && !isInString(i))
+                {
+                    return i;
+                }
         }
 
-        if (isInString(location))
-        {
-            return false;
-        }
-
-        return true;
+        return std::string::npos;
     }
 
     // void fixStrings()
@@ -172,11 +169,12 @@ class scanner
     {
         std::vector<std::pair<std::string, int>> values;
         size_t pos = 0, lastPos = 0;
-        while ((pos = s.find_first_of(
-                    " []{}()<>+-*/&:.\n\"",
+        while ((pos = find_first_of_delim(
+                    s, " []{}()<>+-*/&:.\n\"",
                     lastPos)) != // Make wrapper function of find_first_of
                                  // to check if is in string or not
-               std::string::npos && !isInString(pos))
+                   std::string::npos &&
+               !isInString(pos))
         {
             if (!isInString(lastPos))
             {
