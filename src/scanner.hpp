@@ -81,7 +81,7 @@ class scanner
         for (int i = lastPos; i < input.size(); i++)
         {
             if ((delims.find(input[i]) != std::string::npos)
-                && !isInString(i))
+                && !isInString(i + 1))
                 {
                     return i;
                 }
@@ -196,10 +196,10 @@ class scanner
     }
     void analyze(std::string input)
     {
+        findStrings(input);
         tokenValues = split(input);
         calcTypes();
         refineTokens();
-        findStrings(input);
         // sanatizeTokens();
         // findStrings();
     }
