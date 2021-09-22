@@ -41,8 +41,7 @@ class scanner
         for (int i = 0; i < input.size(); i++)
         {
             if (input[i] == '\"' ||
-                input[i] == '\''&&
-                    input[i - 1] != '\\')
+                input[i] == '\'' && input[i - 1] != '\\')
             {
                 quoteLocations.push_back(i);
             }
@@ -67,6 +66,26 @@ class scanner
         return false;
     }
 
+    size_t find_first_of_delim(std::string input, std::string delims, size_t lastPos)
+    {
+        std::string delims = " []{}()<>+-*/&:.\n\"\'";
+
+        for (int j = 0; j < delims.size(); j++)
+        {
+            if (delims[j] != c)
+            {
+                return false;
+            }
+        }
+
+        if (isInString(location))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     // void fixStrings()
     // {
     //     std::vector<squid::token> tempTokenList;
@@ -78,13 +97,14 @@ class scanner
     //     //     {
     //     //         std::string newToken =
     //     //             fullTokens[i].value + fullTokens[i + 1].value;
-    //     //         tempTokenList.push_back({squid::stringToken, newToken,
+    //     //         tempTokenList.push_back({squid::stringToken,
+    //     newToken,
     //     //                                  fullTokens[i].location});
     //     //         i++;
     //     //     }
     //     //     else
     //     //     {
-    //     //         tempTokenList.push_back({tokenType(fullTokens[i].value),
+    //     // tempTokenList.push_back({tokenType(fullTokens[i].value),
     //     //                                  fullTokens[i].value,
     //     //                                  fullTokens[i].location});
     //     //     }
@@ -96,7 +116,8 @@ class scanner
     //         std::for_each(
     //             fullTokens.begin() + stringLocations[i].first,
     //             fullTokens.begin() + stringLocations[i].second,
-    //             [&i, &stringVec](const std::string &s) { stringVec[i] += s; });
+    //             [&i, &stringVec](const std::string &s) { stringVec[i] +=
+    //             s; });
     //     }
 
     //     fullTokens = tempTokenList;
@@ -151,14 +172,16 @@ class scanner
     {
         std::vector<std::pair<std::string, int>> values;
         size_t pos = 0, lastPos = 0;
-        while ((pos = s.find_first_of(" []{}()<>+-*/&:.\n\"", lastPos)) != // Make wrapper function of find_first_of to check if is in string or not
-               std::string::npos)
+        while ((pos = s.find_first_of(
+                    " []{}()<>+-*/&:.\n\"",
+                    lastPos)) != // Make wrapper function of find_first_of
+                                 // to check if is in string or not
+               std::string::npos && !isInString(pos))
         {
             if (!isInString(lastPos))
             {
-            values.emplace_back(
-                std::make_pair(s.substr(lastPos, pos - lastPos + 1), pos));
-            
+                values.emplace_back(std::make_pair(
+                    s.substr(lastPos, pos - lastPos + 1), pos));
             }
             lastPos = pos + 1;
         }
