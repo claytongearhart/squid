@@ -43,6 +43,7 @@ class scanner
             if (input[i] == '\"' ||
                 input[i] == '\'' && input[i - 1] != '\\')
             {
+                std::cout << "Quote locations has been pushed back\n";
                 quoteLocations.push_back(i);
             }
         }
@@ -51,14 +52,20 @@ class scanner
             stringLocations.emplace_back(
                 std::make_pair(quoteLocations[i], quoteLocations[i + 1]));
         }
+        for (int i = 0; i < stringLocations.size(); i++)
+        {
+            std::cout << "String at " << stringLocations[i].first << ", " << stringLocations[i].second << "\n";
+        }
     }
 
     bool isInString(int location)
     {
+        
         for (int i = 0; i < stringLocations.size(); i++)
         {
-            if (stringLocations[i].first < location &&
-                location < stringLocations[i].second)
+            //std::cout << "Called to check if : " << location << " is between " << stringLocations[i].first << " and " << stringLocations[i].second << "\n";
+            if ((stringLocations[i].first < location) &&
+                (location < stringLocations[i].second))
             {
                 return true;
             }
