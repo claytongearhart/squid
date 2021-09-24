@@ -81,7 +81,6 @@ class scanner
         size_t lastPos) // TODO : instead of returning nopos when there is
                         // a delim but is in string skip to next
     {
-        size_t numInString = 0;
 
         for (int i = lastPos; i < input.size(); i++)
         {
@@ -90,7 +89,6 @@ class scanner
             {
                 return i;
             }
-
         }
 
         return std::string::npos;
@@ -186,8 +184,7 @@ class scanner
                     s, " []{}()<>+-*/&:.\n\"",
                     lastPos)) != // Make wrapper function of find_first_of
                                  // to check if is in string or not
-                   std::string::npos &&
-               !isInString(pos))
+                   std::string::npos)
         {
             if (!isInString(lastPos))
             {
