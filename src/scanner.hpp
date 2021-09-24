@@ -54,16 +54,19 @@ class scanner
         }
         for (int i = 0; i < stringLocations.size(); i++)
         {
-            std::cout << "String at " << stringLocations[i].first << ", " << stringLocations[i].second << "\n";
+            std::cout << "String at " << stringLocations[i].first << ", "
+                      << stringLocations[i].second << "\n";
         }
     }
 
     bool isInString(int location)
     {
-        
+
         for (int i = 0; i < stringLocations.size(); i++)
         {
-            //std::cout << "Called to check if : " << location << " is between " << stringLocations[i].first << " and " << stringLocations[i].second << "\n";
+            // std::cout << "Called to check if : " << location << " is
+            // between " << stringLocations[i].first << " and " <<
+            // stringLocations[i].second << "\n";
             if ((stringLocations[i].first < location) &&
                 (location < stringLocations[i].second))
             {
@@ -73,18 +76,21 @@ class scanner
         return false;
     }
 
-    size_t find_first_of_delim(std::string input, std::string delims,
-                               size_t lastPos)
+    size_t find_first_of_delim(
+        std::string input, std::string delims,
+        size_t lastPos) // TODO : instead of returning nopos when there is
+                        // a delim but is in string skip to next
     {
-        size_t numInString = 0; 
+        size_t numInString = 0;
 
         for (int i = lastPos; i < input.size(); i++)
         {
-            if ((delims.find(input[i]) != std::string::npos)
-                && !isInString(i + 1))
-                {
-                    return i;
-                }
+            if ((delims.find(input[i]) != std::string::npos) &&
+                !isInString(i))
+            {
+                return i;
+            }
+
         }
 
         return std::string::npos;
