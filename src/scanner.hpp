@@ -76,9 +76,8 @@ class scanner
         return false;
     }
 
-    size_t find_first_of_delim(
-        std::string input, std::string delims,
-        size_t lastPos)
+    size_t find_first_of_delim(std::string input, std::string delims,
+                               size_t lastPos)
     {
 
         for (int i = lastPos; i < input.size(); i++)
@@ -92,44 +91,6 @@ class scanner
 
         return std::string::npos;
     }
-
-    // void fixStrings()
-    // {
-    //     std::vector<squid::token> tempTokenList;
-    //     findStrings();
-
-    //     // for (int i = 0; i < fullTokens.size(); i++)
-    //     // {
-    //     //     if (isInString(i))
-    //     //     {
-    //     //         std::string newToken =
-    //     //             fullTokens[i].value + fullTokens[i + 1].value;
-    //     //         tempTokenList.push_back({squid::stringToken,
-    //     newToken,
-    //     //                                  fullTokens[i].location});
-    //     //         i++;
-    //     //     }
-    //     //     else
-    //     //     {
-    //     // tempTokenList.push_back({tokenType(fullTokens[i].value),
-    //     //                                  fullTokens[i].value,
-    //     //                                  fullTokens[i].location});
-    //     //     }
-    //     // }
-    //     std::stringstream ss;
-    //     std::vector <std::string> stringVec;
-    //     for (int i = 0; i < stringLocations.size(); i++)
-    //     {
-    //         std::for_each(
-    //             fullTokens.begin() + stringLocations[i].first,
-    //             fullTokens.begin() + stringLocations[i].second,
-    //             [&i, &stringVec](const std::string &s) { stringVec[i] +=
-    //             s; });
-    //     }
-
-    //     fullTokens = tempTokenList;
-    // }
-
     squid::tokenTypes tokenType(std::string token)
     {
 
@@ -175,30 +136,25 @@ class scanner
   public:
     std::vector<squid::token> fullTokens;
 
-    std::vector<std::pair<std::string, int>> split(std::string s)
+    void split(std::string s)
     {
-        std::vector<std::pair<std::string, int>> values;
         size_t pos = 0, lastPos = 0;
         while ((pos = find_first_of_delim(
                     s, " []{}()<>+-*/&:.\n\"",
                     lastPos)) != // Make wrapper function of find_first_of
                                  // to check if is in string or not
-                   std::string::npos)
+               std::string::npos)
         {
-
-                values.emplace_back(std::make_pair(
-                    s.substr(lastPos, pos - lastPos + 1), pos));
+            std::string token = s.substr(lastPos, pos - lastPos + 1);
+            fullTokens.push_back({tokenType(token), token, pos});
             lastPos = pos + 1;
         }
-        values.emplace_back(std::make_pair(s.substr(lastPos), pos));
 
-        return values;
     }
     void analyze(std::string input)
     {
         findStrings(input);
-        tokenValues = split(input);
-        calcTypes();
+        split(input);
         refineTokens();
         // sanatizeTokens();
         // findStrings();

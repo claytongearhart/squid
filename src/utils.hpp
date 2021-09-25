@@ -35,11 +35,11 @@ class token
 {
   public:
     tokenTypes type;
-    int location;
+    size_t location;
     std::string value;
     std::string scopeDepth;
 
-    token(tokenTypes inputType, std::string inputValue, int inputLocation)
+    token(tokenTypes inputType, std::string inputValue, size_t inputLocation)
     {
         type = inputType;
         value = inputValue;
