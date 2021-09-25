@@ -67,8 +67,8 @@ class scanner
             // std::cout << "Called to check if : " << location << " is
             // between " << stringLocations[i].first << " and " <<
             // stringLocations[i].second << "\n";
-            if ((stringLocations[i].first < location) &&
-                (location < stringLocations[i].second))
+            if ((stringLocations[i].first + 1 < location) &&
+                (location < stringLocations[i].second - 1))
             {
                 return true;
             }
@@ -78,8 +78,7 @@ class scanner
 
     size_t find_first_of_delim(
         std::string input, std::string delims,
-        size_t lastPos) // TODO : instead of returning nopos when there is
-                        // a delim but is in string skip to next
+        size_t lastPos)
     {
 
         for (int i = lastPos; i < input.size(); i++)
@@ -186,11 +185,9 @@ class scanner
                                  // to check if is in string or not
                    std::string::npos)
         {
-            if (!isInString(lastPos))
-            {
+
                 values.emplace_back(std::make_pair(
                     s.substr(lastPos, pos - lastPos + 1), pos));
-            }
             lastPos = pos + 1;
         }
         values.emplace_back(std::make_pair(s.substr(lastPos), pos));
