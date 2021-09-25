@@ -26,3 +26,6 @@ Worked on ways to fix strings, did not succed. Although did learn the ins and ou
 
 ### 2021-9-21 - 1 Hour
 Contiuned to work on ways to fix strings, did not succed but came of with idea to work on, when I have time.
+
+### 2021-9-24 - 3 Hours
+Found out problem with ways to fix string, went to the source and making broken strings and fixing them later make good strings at start. Found it `isInString()` function had some errors and created a wrapper around `std::string::find_first_of()` and evreything works now.
