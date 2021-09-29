@@ -5,7 +5,6 @@
 #include <fstream>
 #include <iostream>
 #include <stdint.h>
-
 int main()
 {
     scanner mainScanner;

@@ -31,6 +31,20 @@ enum tokenTypes
     other
 };
 
+namespace object
+{
+    class object
+    {
+        public:
+            bool isLiteral;
+    };
+    class string: public object
+    {
+        public:
+            std::string value;
+
+    };
+}
 class token
 {
   public:

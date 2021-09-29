@@ -5,3 +5,4 @@ build:
 test:
 	mkdir -p tests
 	g++ tests/test.cpp -o tests/test -std=c++20 -pthread
+

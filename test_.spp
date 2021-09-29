@@ -1,0 +1,7 @@
+#use os
+
+int main()
+{
+    os::console console;
+    console.putChar('c');
+}
