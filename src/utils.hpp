@@ -60,9 +60,9 @@ bool isInStringVec(std::vector<std::string> a, std::string o)
 {
     return std::find(a.begin(), a.end(), o) != a.end();
 }
-bool isInCharArray(const char a[], const char o)
+bool isInCharArray(std::string a, const char o)
 {
-    for (int i = 0; i < strlen(a); i++)
+    for (int i = 0; i < a.length(); i++)
     {
         if (o == a[i])
         {

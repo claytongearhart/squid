@@ -14,16 +14,15 @@ class scanner
 {
   private:
     std::vector<std::pair<int, int>> stringLocations;
-    std::vector<std::string>
-        boolTokens = {"true", "false"},
+    std::vector<std::string> boolTokens = {"true", "false"},
 
-        delimiterTokens = {"(", ")", "{", "}", ";", ","},
+                             delimiterTokens = {"(", ")", "{", "}", ";", ","},
 
-        keywordTokens = {"int", "float",  "auto",  "double",
-                         "do",  "switch", "return"},
+                             keywordTokens = {"int", "float",  "auto",  "double",
+                                              "do",  "switch", "return"},
 
-        operatorTokens = {"<", ">",  "<=", ">=", "*",  "+",  "-",  "/",
-                          "=", "-=", "*=", "+=", "/=", "++", "--", "=="};
+                             operatorTokens = {"<", ">",  "<=", ">=", "*",  "+",  "-",  "/",
+                                               "=", "-=", "*=", "+=", "/=", "++", "--", "=="};
     std::vector<std::pair<std::string, int>> tokenValues;
     bool isDigit(const std::string &input)
     {
@@ -37,36 +36,57 @@ class scanner
     void findStrings(std::string input)
     {
         std::vector<int> quoteLocations;
+        std::vector<int> dQuoteLocations;
 
         for (int i = 0; i < input.size(); i++)
         {
-            if (input[i] == '\"' ||
-                input[i] == '\'' && input[i - 1] != '\\')
+            bool isEscaped = input[i - 1] == '\\';
+
+            if (input[i] == '\"' && !isEscaped)
             {
-                std::cout << "Quote locations has been pushed back\n";
+                dQuoteLocations.push_back(i);
+            }
+            else if (input[i] == '\'' && !isEscaped)
+            {
                 quoteLocations.push_back(i);
             }
         }
         for (int i = 0; i < quoteLocations.size(); i += 2)
         {
-            stringLocations.emplace_back(
-                std::make_pair(quoteLocations[i], quoteLocations[i + 1]));
+            stringLocations.emplace_back(std::make_pair(quoteLocations[i], quoteLocations[i + 1]));
         }
-        for (int i = 0; i < stringLocations.size(); i++)
+        for (int i = 0; i < dQuoteLocations.size(); i += 2)
         {
-            std::cout << "String at " << stringLocations[i].first << ", "
-                      << stringLocations[i].second << "\n";
+            stringLocations.emplace_back(
+                std::make_pair(dQuoteLocations[i], dQuoteLocations[i + 1]));
         }
+
+        cleanStringLocations();
     }
 
+    void cleanStringLocations()
+    {
+        size_t stringStart, stringEnd;
+        for (int i = 0; i < stringLocations.size(); i++)
+        {
+            stringStart = stringLocations[i].first;
+            stringEnd = stringLocations[i].second;
+
+            for (int j = 0; j < stringLocations.size(); j++)
+            {
+                if (stringLocations[i].first < stringLocations[j].first &&
+                    stringLocations[j].first < stringLocations[i].second)
+                {
+                    stringLocations.erase(stringLocations.begin() + j);
+                }
+            }
+        }
+    }
     bool isInString(int location)
     {
 
         for (int i = 0; i < stringLocations.size(); i++)
         {
-            // std::cout << "Called to check if : " << location << " is
-            // between " << stringLocations[i].first << " and " <<
-            // stringLocations[i].second << "\n";
             if ((stringLocations[i].first + 1 < location) &&
                 (location < stringLocations[i].second - 1))
             {
@@ -76,14 +96,12 @@ class scanner
         return false;
     }
 
-    size_t find_first_of_delim(std::string input, std::string delims,
-                               size_t lastPos)
+    size_t find_first_of_delim(std::string input, std::string delims, size_t lastPos)
     {
 
         for (int i = lastPos; i < input.size(); i++)
         {
-            if ((delims.find(input[i]) != std::string::npos) &&
-                !isInString(i))
+            if ((delims.find(input[i]) != std::string::npos) && !isInString(i))
             {
                 return i;
             }
@@ -94,17 +112,13 @@ class scanner
     squid::tokenTypes tokenType(std::string token)
     {
 
-        return squid::utils::isInStringVec(operatorTokens, token)
-                   ? squid::boolToken
-               : squid::utils::isInStringVec(delimiterTokens, token)
-                   ? squid::delimiterToken
-               : squid::utils::isInStringVec(keywordTokens, token)
-                   ? squid::keywordToken
-               : squid::utils::isInStringVec(boolTokens, token)
-                   ? squid::operatorToken
-               : isString(token) ? squid::stringToken
-               : isDigit(token)  ? squid::digitToken
-                                 : squid::other;
+        return squid::utils::isInStringVec(operatorTokens, token)    ? squid::boolToken
+               : squid::utils::isInStringVec(delimiterTokens, token) ? squid::delimiterToken
+               : squid::utils::isInStringVec(keywordTokens, token)   ? squid::keywordToken
+               : squid::utils::isInStringVec(boolTokens, token)      ? squid::operatorToken
+               : isString(token)                                     ? squid::stringToken
+               : isDigit(token)                                      ? squid::digitToken
+                                                                     : squid::other;
     }
 
     void refineTokens()
@@ -114,22 +128,51 @@ class scanner
         {
             if (!(fullTokens[i].value.length() == 1))
             {
-                auto beginTokenValue = fullTokens[i].value.substr(
-                    0, fullTokens[i].value.size() - 1);
+                auto beginTokenValue =
+                    fullTokens[i].value.substr(0, fullTokens[i].value.size() - 1);
                 std::string lastTokenValue(1, fullTokens[i].value.back());
 
-                tempFullTokens.push_back({tokenType(beginTokenValue),
-                                          beginTokenValue,
-                                          fullTokens[i].location});
-                tempFullTokens.push_back({tokenType(lastTokenValue),
-                                          lastTokenValue,
-                                          fullTokens[i].location});
+                tempFullTokens.push_back(
+                    {tokenType(beginTokenValue), beginTokenValue, fullTokens[i].location});
+                tempFullTokens.push_back(
+                    {tokenType(lastTokenValue), lastTokenValue, fullTokens[i].location});
             }
             else
             {
                 tempFullTokens.push_back(fullTokens[i]);
             }
         }
+        fullTokens = tempFullTokens;
+        tempFullTokens.clear();
+
+        std::string operatorDelims = "<>:=+-";
+        for (int i = 0; i < fullTokens.size(); i++)
+        {
+            if ( fullTokens[i].value.length() == 1 &&
+                squid::utils::isInCharArray(operatorDelims, fullTokens[i].value.front()) &&
+                fullTokens[i].value == fullTokens[i + 1].value)
+            {
+                std::cout << "penis\n";
+                std::string token;
+
+                token = fullTokens[i].value;
+                token += fullTokens[i + 1].value;
+
+                tempFullTokens.push_back({squid::operatorToken, token, fullTokens[i].location});
+
+                i++;
+            }
+            else if (fullTokens[i].type == squid::stringToken && fullTokens[i + 2].type == squid::stringToken)
+            {
+                tempFullTokens.push_back({squid::stringToken, fullTokens[i+1].value, fullTokens[i+1].location});
+                i += 2;
+            }
+            else
+            {
+                tempFullTokens.emplace_back(fullTokens[i]);
+            }
+        }
+
         fullTokens = tempFullTokens;
     }
 
@@ -139,51 +182,30 @@ class scanner
     void split(std::string s)
     {
         size_t pos = 0, lastPos = 0;
-        while ((pos = find_first_of_delim(
-                    s, " []{}()<>+-*/&:.\n\"",
-                    lastPos)) != // Make wrapper function of find_first_of
-                                 // to check if is in string or not
+        while ((pos = find_first_of_delim(s, " []{}()<>+-*/&:.\n\"",
+                                          lastPos)) != // Make wrapper function of find_first_of
+                                                       // to check if is in string or not
                std::string::npos)
         {
             std::string token = s.substr(lastPos, pos - lastPos + 1);
+
             fullTokens.push_back({tokenType(token), token, pos});
+
             lastPos = pos + 1;
         }
-
     }
     void analyze(std::string input)
     {
         findStrings(input);
         split(input);
         refineTokens();
-        // sanatizeTokens();
-        // findStrings();
     }
 
     void calcTypes()
     {
         for (int i = 0; i < tokenValues.size(); i++)
         {
-            fullTokens.push_back({tokenType(tokenValues[i].first),
-                                  tokenValues[i].first, 1});
-        }
-    }
-
-    void sanatizeTokens()
-    {
-        for (int i = 0; i < fullTokens.size(); i++)
-        {
-            for (int j = 0; j < fullTokens[i].value.size(); j++)
-            {
-                if (squid::utils::isSpace(fullTokens[i].value[j])) //
-                {
-                    fullTokens[i].value.erase(j, 1);
-                }
-            }
-            if (fullTokens[i].value == "")
-            {
-                fullTokens.erase(fullTokens.begin() + i);
-            }
+            fullTokens.push_back({tokenType(tokenValues[i].first), tokenValues[i].first, 1});
         }
     }
 };
