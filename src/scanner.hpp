@@ -152,7 +152,6 @@ class scanner
                 squid::utils::isInCharArray(operatorDelims, fullTokens[i].value.front()) &&
                 fullTokens[i].value == fullTokens[i + 1].value)
             {
-                std::cout << "penis\n";
                 std::string token;
 
                 token = fullTokens[i].value;
@@ -184,6 +183,9 @@ class scanner
     void split(std::string s)
     {
         size_t pos = 0, lastPos = 0;
+
+        std::cout << s;
+        
         while ((pos = find_first_of_delim(s, " []{}()<>+-*/&:.\n\"", lastPos)) != std::string::npos)
         {
             std::string token = s.substr(lastPos, pos - lastPos + 1);

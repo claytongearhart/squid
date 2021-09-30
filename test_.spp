@@ -1,7 +1,6 @@
-#use os
+#include <iostream>
 
 int main()
 {
-    os::console console;
-    console.putChar('c');
+    std::cout << "Foo, bar";
 }

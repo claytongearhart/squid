@@ -10,12 +10,16 @@ int main()
     scanner mainScanner;
     squid::console appConsole;
 
-    std::ifstream source("test_.cpp");
+    std::cout << "l13\n"; // pass
+
+    std::ifstream source("test_.spp");
     std::string sourceString((std::istreambuf_iterator<char>(source)),
                              std::istreambuf_iterator<char>());
 
     mainScanner.analyze(sourceString);
-    auto tokenList = mainScanner.fullTokens;
+    std::vector<squid::token> tokenList = mainScanner.fullTokens;
+
+    std::cout << mainScanner.fullTokens.size();
     for (int i = 0; i < tokenList.size(); i++)
     {
         std::cout << tokenList[i].value << " : " << tokenList[i].type
@@ -49,4 +53,3 @@ int main()
         }
     }
 }
-// tokenList[bracketLocations[i].position]
