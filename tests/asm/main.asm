@@ -11,7 +11,7 @@
 // Setup the parameters to print hello world
 // and then call Linux to do it.
 
-_start: mov X0, #0     // 1 = StdOut
+_start: mov X0, #1     // 1 = StdOut
         adr X1, helloworld // string to print
         mov X2, #13     // length of our string
         mov X16, #4     // MacOS write system call

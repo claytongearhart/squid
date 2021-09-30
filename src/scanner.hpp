@@ -148,7 +148,7 @@ class scanner
         std::string operatorDelims = "<>:=+-";
         for (int i = 0; i < fullTokens.size(); i++)
         {
-            if ( fullTokens[i].value.length() == 1 &&
+            if (fullTokens[i].value.length() == 1 &&
                 squid::utils::isInCharArray(operatorDelims, fullTokens[i].value.front()) &&
                 fullTokens[i].value == fullTokens[i + 1].value)
             {
@@ -162,14 +162,16 @@ class scanner
 
                 i++;
             }
-            else if (fullTokens[i].type == squid::stringToken && fullTokens[i + 2].type == squid::stringToken)
+            else if (fullTokens[i].type == squid::stringToken &&
+                     fullTokens[i + 2].type == squid::stringToken)
             {
-                tempFullTokens.push_back({squid::stringToken, fullTokens[i+1].value, fullTokens[i+1].location});
+                tempFullTokens.push_back(
+                    {squid::stringToken, fullTokens[i + 1].value, fullTokens[i + 1].location});
                 i += 2;
             }
             else
             {
-                tempFullTokens.emplace_back(fullTokens[i]);
+                tempFullTokens.push_back(fullTokens[i]);
             }
         }
 
@@ -182,10 +184,7 @@ class scanner
     void split(std::string s)
     {
         size_t pos = 0, lastPos = 0;
-        while ((pos = find_first_of_delim(s, " []{}()<>+-*/&:.\n\"",
-                                          lastPos)) != // Make wrapper function of find_first_of
-                                                       // to check if is in string or not
-               std::string::npos)
+        while ((pos = find_first_of_delim(s, " []{}()<>+-*/&:.\n\"", lastPos)) != std::string::npos)
         {
             std::string token = s.substr(lastPos, pos - lastPos + 1);
 
@@ -199,13 +198,5 @@ class scanner
         findStrings(input);
         split(input);
         refineTokens();
-    }
-
-    void calcTypes()
-    {
-        for (int i = 0; i < tokenValues.size(); i++)
-        {
-            fullTokens.push_back({tokenType(tokenValues[i].first), tokenValues[i].first, 1});
-        }
     }
 };
