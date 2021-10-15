@@ -37,7 +37,7 @@ class node
     {
         tagName = name;
         props = tagProps;
-        addChild(0, content);
+        addNode(0, content);
     }
     node operator[](int index)
     {
@@ -51,11 +51,16 @@ class node
 
     void operator = (const std::variant<node, std::string> &value)
     {
-        children.empty();
-        children[0] = value;
+        children.clear();
+        children.push_back(value);
     }
 
-    std::variant<node, std::string> addChild(unsigned int index,
+    void operator += (const std::variant<node, std::string> &value)
+    {
+        children.push_back(value);
+    }
+
+    std::variant<node, std::string> addNode(unsigned int index,
                                              std::variant<node, std::string> child)
     {
         childrenIt = children.begin();
@@ -65,20 +70,11 @@ class node
 
         return children[index];
     }
-
-    std::string getRawXML()
-    {
-        std::string xmlString;
-        xmlString = fmt::format("<{0} {1}>\n\t", tagName, getPropString(props));
-        getChildContent(this, xmlString);
-        xmlString += fmt::format("\n</{}>", tagName);
-        return xmlString;
-    }
+    std::map<std::string, std::string> props;
+    std::string tagName;
 
   private:
 
-    std::map<std::string, std::string> props;
-    std::string tagName;
     std::vector<std::variant<node, std::string>>::iterator childrenIt;
 
     std::string getPropString(std::map<std::string, std::string> &inputProps)
@@ -117,30 +113,76 @@ class document
   public:
     document(std::string version)
     {
-        rawTree = "<?xml version=\"" + version + "\" encoding=\"UTF-8\"?>\n";
+        children.push_back("<?xml version=\"" + version + "\" encoding=\"UTF-8\"?>\n");
     }
 
-    void addNode(std::string tagName, std::map<std::string, std::string> props, std::string content)
+    std::variant<node, std::string> addNode(unsigned int index,
+                                             std::variant<node, std::string> child)
     {
-        std::string propsString;
-        std::map<std::string, std::string>::iterator it;
-        for (it = props.begin(); it != props.end(); ++it)
+        childrenIt = children.begin();
+        std::advance(childrenIt, index + 1);
+
+        children.insert(childrenIt, child);
+
+        return children[index + 1];
+    }
+
+    std::string getRawXML()
+    {
+        std::string xmlString;
+        for(int i = 0; i < children.size(); i++)
         {
-            propsString += it->first + "=\"" + it->second + "\"";
+            if (children[i].index() == 1)
+            {
+                xmlString += std::get<std::string>(children[i]);
+            }
+            else // Type of input -> children[i] is assumed to be squid::xml::node here
+            {
+                xmlString += fmt::format("<{0} {1}>", std::get<node>(children[i]).tagName,
+                                         getPropString(std::get<node>(children[i]).props));
+                getChildContent(&std::get<node>(children[i]), xmlString);
+
+                xmlString += fmt::format("</{0}>", std::get<node>(children[i]).tagName);
+            }
         }
-        std::string innerXML =
-            fmt::format("<{0} {1}>\n\t{2}\n</{0}>", tagName, propsString, content);
-
-        rawTree += innerXML;
-    }
-
-    std::string getRawData()
-    {
-        return rawTree;
+        
+        return xmlString;
     }
 
   private:
-    std::string rawTree;
+    std::vector<std::variant<node, std::string>> children;
+        std::vector<std::variant<node, std::string>>::iterator childrenIt;
+
+        std::string getPropString(std::map<std::string, std::string> &inputProps)
+    {
+        std::string propsString;
+        std::map<std::string, std::string>::iterator it;
+        for (it = inputProps.begin(); it != inputProps.end(); ++it)
+        {
+            propsString += it->first + "=\"" + it->second + "\"";
+        }
+
+        return propsString;
+    }
+
+    void getChildContent(node *input, std::string &xmlString)
+    {
+        for (int i = 0; i < input->children.size(); i++)
+        {
+            if (input->children[i].index() == 1)
+            {
+                xmlString += std::get<std::string>(input->children[i]);
+            }
+            else // Type of input -> children[i] is assumed to be squid::xml::node here
+            {
+                xmlString += fmt::format("<{0} {1}>", std::get<node>(input->children[i]).tagName,
+                                         getPropString(std::get<node>(input -> children[i]).props));
+                getChildContent(&std::get<node>(input->children[i]), xmlString);
+
+                xmlString += fmt::format("</{0}>", std::get<node>(input->children[i]).tagName);
+            }
+        }
+    }
 };
 
 }; // namespace xml

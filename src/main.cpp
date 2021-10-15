@@ -54,35 +54,13 @@ int main()
 
     squid::xml::node xmlNode2("p", {{"boo", "far"}}, "I have a nice cock");
     squid::xml::node xmlNode("root", {{"foo", "bar"}}, xmlNode2);
-    xmlNode.addChild(1, "PP");
+    xmlNode.addNode(1, "PP");
 
-    xmlNode[0] = "Penis";
 
-    std::cout << xmlNode.getRawXML() << "\n";
+    squid::xml::document xmlDoc("1.0");
 
-    // json tokenTree;
+    xmlDoc.addNode(0, xmlNode);
 
-    // tokenTree["root"] = tokenList[0].value;
+    std::cout << xmlDoc.getRawXML() << "\n";
 
-    std::vector<std::string> locationString = {"root"};
-    // std::vector<json&> tokenTreeRefIndex;
-    // for (int i = 0; i < tokenList.size(); i++)
-    // {
-    //     if (tokenList[i].value == "{")
-    //     {
-    //         locationString.push_back(std::to_string(i));
-    //     } else if (tokenList[i].value == "}")
-    //     {
-    //         locationString.pop_back();
-    //     }
-
-    //     tokenTreeRefIndex.push_back(tokenTree["root"]);
-    //     for(int i = 1; i <= locationString.size(); i++)
-    //     {
-    //         tokenTreeRefIndex.push_back(tokenTreeRefIndex[i]);
-    //     }
-        
-    //     tokenTreeRefIndex[locationString.size()] = tokenList[i].value;
-
-    // }
 }
