@@ -12,10 +12,16 @@
 // and then call Linux to do it.
 
 _start: mov X0, #1     // 1 = StdOut
-        adr X1, helloworld // string to print
-        mov X2, #13     // length of our string
+        adr X1, mikeHawk // string to print
+        mov X2, #3   // length of our string
         mov X16, #4     // MacOS write system call
         svc 0     // Call linux to output the string
+
+        mov X0, #1
+        adr X1, cock
+        mov X2, #4
+        mov X16, #4
+        svc 0
 
 // Setup the parameters to exit the program
 // and then call Linux to do it.
@@ -24,4 +30,6 @@ _start: mov X0, #1     // 1 = StdOut
         mov     X16, #1     // Service command code 1 terminates this program
         svc     0           // Call MacOS to terminate the program
 
-helloworld:      .ascii "PP\n" 
+mikeHawk:      .ascii "PP\n" 
+.align 2
+cock:          .ascii "PPP\n" 

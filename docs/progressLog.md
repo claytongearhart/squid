@@ -29,3 +29,6 @@ Contiuned to work on ways to fix strings, did not succed but came of with idea t
 
 ### 2021-9-24 - 3 Hours
 Found out problem with ways to fix string, went to the source and making broken strings and fixing them later make good strings at start. Found it `isInString()` function had some errors and created a wrapper around `std::string::find_first_of()` and evreything works now.
+
+### 2021-10-14 - 5 Hours
+Thought of ways to implement basic tree structure. At first I thought of using JSON to implement but using third party json libaries was a pain, I ran into issues with accessing child nodes recursivly. I then tried to use third party xml libaries, and I ran into the same problem. I ended up making my own xml like class. At first I was thinking of storing types in a vector with some sort of location table but I ended up making a `node` class that contains a vector of `std::variant`s of strings or nodes. I then overloaded the index operator. 

@@ -96,6 +96,8 @@
         "__tuple": "cpp",
         "locale": "cpp",
         "queue": "cpp",
-        "stack": "cpp"
+        "stack": "cpp",
+        "forward_list": "cpp",
+        "valarray": "cpp"
     }
 }
