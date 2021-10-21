@@ -1,4 +1,4 @@
-# IB Project Progress Log
+# PP Progress Log
 
 ### 2021-9-03 2 Hours
 Worked on scanner. Learned about array manipulation(I had always used vectors before) and got to use templates. Started work on checking token type via dynamic programming. Implemented sanitization of raw input.
