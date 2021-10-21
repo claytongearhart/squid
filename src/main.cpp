@@ -13,8 +13,6 @@ int main()
     scanner mainScanner;
     squid::console appConsole;
 
-    std::cout << "l13\n"; // pass
-
     std::ifstream source("test_.spp");
     std::string sourceString((std::istreambuf_iterator<char>(source)),
                              std::istreambuf_iterator<char>());
@@ -52,15 +50,10 @@ int main()
         }
     }
 
-    squid::xml::node xmlNode2("p", {{"boo", "far"}}, "I have a nice cock");
-    squid::xml::node xmlNode("root", {{"foo", "bar"}}, xmlNode2);
-    xmlNode.addNode(1, "PP");
+    squid::xml::node xmlNode("p", {{"boo", "far"}}, squid::xml::node("p", {{"boo", "far"}}, ""));
 
 
-    squid::xml::document xmlDoc("1.0");
 
-    xmlDoc.addNode(0, xmlNode);
-
-    std::cout << xmlDoc.getRawXML() << "\n";
+    std::cout << xmlNode.getNodeByLocationVector({0}).getXML() << "\n";
 
 }
