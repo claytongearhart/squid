@@ -185,7 +185,7 @@ class scanner
         size_t pos = 0, lastPos = 0;
 
         std::cout << s;
-        
+
         while ((pos = find_first_of_delim(s, " []{}()<>+-*/&:.\n\"", lastPos)) != std::string::npos)
         {
             std::string token = s.substr(lastPos, pos - lastPos + 1);

@@ -1,3 +1,4 @@
+#include "json.hpp"
 #include <algorithm>
 #include <array>
 #include <fmt/format.h>
@@ -7,24 +8,11 @@
 #include <string>
 #include <tuple>
 #include <type_traits>
-#include "xml.hpp"
 #include <variant>
 #include <vector>
 
 namespace squid
 {
-
-// template<class T>
-//  class tree
-//  {
-//      public:
-//          std::variant<T, tree> operator [](const std::string index)
-//          {
-
-//         }
-//     private:
-//         std::string json;
-// };
 
 struct bracket
 {
@@ -78,6 +66,8 @@ class token
 
 namespace utils
 {
+
+
 bool isSpace(unsigned char c)
 {
     return (c == ' ' || c == '\n' || c == '\r' || c == '\t' || c == '\v' || c == '\f');

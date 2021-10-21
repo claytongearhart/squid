@@ -5,7 +5,7 @@
 #include <iostream>
 #include <nlohmann/json.hpp>
 #include <stdint.h>
-//using json = nlohmann::json;
+// using json = nlohmann::json;
 
 int main()
 {
@@ -30,30 +30,27 @@ int main()
     bool mainExist;
 
     std::vector<squid::bracket> bracketLocations;
+    squid::object::node tokenTree("root");
+    std::vector<unsigned int> locationVec = {};
 
     for (int i = 0; i < tokenList.size(); i++)
     {
-        if (tokenList[i].value == "int" && tokenList[i].type == squid::keywordToken &&
-            tokenList[i + 1].value == "main")
-        {
-            mainAt = i + 1;
-            bool mainExist = true;
-        }
-        // Search for braces
+        std::cout << "l38\n";
+
         if (tokenList[i].value == "{" && tokenList[i].type == squid::delimiterToken)
         {
-            bracketLocations.emplace_back(squid::bracket(i, true));
+            std::cout << "l42\n";
+            tokenTree.getNodeByLocationVector(locationVec).addNode(squid::object::node("open"));
         }
-        if (tokenList[i].value == "}" && tokenList[i].type == squid::delimiterToken)
+        else if (tokenList[i].value == "}" && tokenList[i].type == squid::delimiterToken)
         {
-            bracketLocations.emplace_back(squid::bracket(i, false));
+            std::cout << "l47\n";
+            locationVec.pop_back();
+        }
+        else
+        {
+            std::cout << "l52\n";
+            tokenTree.getNodeByLocationVector(locationVec).addNode(tokenList[i].value);
         }
     }
-
-    squid::xml::node xmlNode("idk", squid::xml::node("k", squid::xml::node("k", "k")));
-
-    xmlNode.addNode(1, "k");
-
-    std::cout << xmlNode.getNodeByLocationVector({0}).getJSON() << "\n";
-
 }
