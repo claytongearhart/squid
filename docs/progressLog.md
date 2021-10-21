@@ -32,3 +32,6 @@ Found out problem with ways to fix string, went to the source and making broken 
 
 ### 2021-10-14 - 5 Hours
 Thought of ways to implement basic tree structure. At first I thought of using JSON to implement but using third party json libaries was a pain, I ran into issues with accessing child nodes recursivly. I then tried to use third party xml libaries, and I ran into the same problem. I ended up making my own xml like class. At first I was thinking of storing types in a vector with some sort of location table but I ended up making a `node` class that contains a vector of `std::variant`s of strings or nodes. I then overloaded the index operator. 
+
+### 2021-10-21 - 2.5 Hours
+Got get child by index vector working. My idea of using a for loop and reference didn't work. Instead I had to use some new c++20 features like std::span. I thought that migrating from XML to JSON would be cleaner so I started work on that.

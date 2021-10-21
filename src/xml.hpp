@@ -19,11 +19,10 @@ class node
 {
   public:
     std::vector<std::variant<node, std::string>> children;
-    node(std::string name, std::map<std::string, std::string> tagProps,
+    node(std::string name,
          std::variant<node, std::string> content)
     {
         tagName = name;
-        props = tagProps;
         addNode(0, content);
     }
     node operator[](int index)
@@ -36,18 +35,8 @@ class node
         return std::get<node>(children[index]);
     }
 
-    void operator=(const std::variant<node, std::string> &value)
-    {
-        children.clear();
-        children.push_back(value);
-    }
 
-    void operator+=(const std::variant<node, std::string> &value)
-    {
-        children.push_back(value);
-    }
-
-    std::string getXML()
+    std::string getJSON()
     {
         std::string xmlString;
         for (int i = 0; i < children.size(); i++)
@@ -58,11 +47,10 @@ class node
             }
             else // Type of input -> children[i] is assumed to be squid::xml::node here
             {
-                xmlString += fmt::format("<{0} {1}>", std::get<node>(children[i]).tagName,
-                                         getPropString(std::get<node>(children[i]).props));
+                xmlString += "{";
                 getChildContent(&std::get<node>(children[i]), xmlString);
 
-                xmlString += fmt::format("</{0}>", std::get<node>(children[i]).tagName);
+                xmlString += "}";
             }
         }
 
@@ -72,12 +60,14 @@ class node
 
     node accessNode(node n, std::span<unsigned int> span)
     {
+        std::cout << "l63\n";
         return span.size() ? accessNode(n[span[0]], span.subspan(1)) : n;
     }
 
     node getNodeByLocationVector(std::vector<unsigned int> locationVec)
     {
-        return accessNode(std::get<node>(children[1]), locationVec);
+        std::cout << "l69\n";
+        return accessNode(*this, locationVec);
     }
 
     std::variant<node, std::string> addNode(unsigned int index,
@@ -90,23 +80,11 @@ class node
 
         return children[index];
     }
-    std::map<std::string, std::string> props;
     std::string tagName;
 
   private:
     std::vector<std::variant<node, std::string>>::iterator childrenIt;
 
-    std::string getPropString(std::map<std::string, std::string> &inputProps)
-    {
-        std::string propsString;
-        std::map<std::string, std::string>::iterator it;
-        for (it = inputProps.begin(); it != inputProps.end(); ++it)
-        {
-            propsString += it->first + "=\"" + it->second + "\"";
-        }
-
-        return propsString;
-    }
 
     void getChildContent(node *input, std::string &xmlString)
     {
@@ -118,11 +96,10 @@ class node
             }
             else // Type of input -> children[i] is assumed to be squid::xml::node here
             {
-                xmlString += fmt::format("<{0} {1}>", std::get<node>(input->children[i]).tagName,
-                                         getPropString(props));
+                xmlString += "{";
                 getChildContent(&std::get<node>(input->children[i]), xmlString);
 
-                xmlString += fmt::format("</{0}>", std::get<node>(input->children[i]).tagName);
+                xmlString += "}\n";
             }
         }
     }

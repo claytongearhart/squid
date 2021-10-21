@@ -50,10 +50,10 @@ int main()
         }
     }
 
-    squid::xml::node xmlNode("p", {{"boo", "far"}}, squid::xml::node("p", {{"boo", "far"}}, ""));
+    squid::xml::node xmlNode("idk", squid::xml::node("k", squid::xml::node("k", "k")));
 
+    xmlNode.addNode(1, "k");
 
-
-    std::cout << xmlNode.getNodeByLocationVector({0}).getXML() << "\n";
+    std::cout << xmlNode.getNodeByLocationVector({0}).getJSON() << "\n";
 
 }
