@@ -33,7 +33,7 @@ int main()
     squid::object::node tokenTree("root");
     std::vector<unsigned int> locationVec = {};
 
-    for (int i = 0; i < tokenList.size(); i++)
+    for (int i = 0; i <5; i++)
     {
         std::cout << "l38\n";
 
@@ -53,4 +53,6 @@ int main()
             tokenTree.getNodeByLocationVector(locationVec).addNode(tokenList[i].value);
         }
     }
+
+    std::cout << tokenTree.getJSON();
 }

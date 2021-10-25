@@ -57,15 +57,15 @@ class node
         return children.size();
     }
 
-
-    node accessNode(node n, std::span<unsigned int> span)
+    node &accessNode(node *n, std::span<unsigned int> span)
     {
-        return span.size() ? accessNode(n[span[0]], span.subspan(1)) : n;
+        return span.size() ? accessNode(
+            &n[span[0]], span.subspan(1)) : *n;
     }
 
-    node getNodeByLocationVector(std::vector<unsigned int> locationVec)
+    node &getNodeByLocationVector(std::vector<unsigned int> locationVec) 
     {
-        return accessNode(*this, locationVec);
+        return accessNode(this, locationVec);
     }
 
     std::variant<node, std::string> addNode(std::variant<node, std::string> child, std::optional< unsigned int> index = {})
@@ -86,7 +86,51 @@ class node
     }
     std::string tagName;
 
+        std::string getJSON()
+     {
+         std::string xmlString = fmt::format({"\"{}\":\n{{\n"}, tagName);
+         for (int i = 0; i < children.size(); i++)
+         {
+             if (children[i].index() == 1)
+             {
+                 xmlString += std::get<std::string>(children[i]);
+             }
+             else // Type of input -> children[i] is assumed to be squid::xml::node here
+             {
+                 xmlString += fmt::format("{}\"{}\": ", squid::utils::repeatChar(2, ' '),
+                                          std::get<node>(children[i]).tagName);
+                 getChildContent(&std::get<node>(children[i]), xmlString, 2);
+
+                 xmlString += i + 1 < children.size() ? ",\n" : "";
+             }
+         }
+         xmlString += "\n}";
+
+         return xmlString;
+     }
+
   private:
+  void getChildContent(node *input, std::string &xmlString, unsigned int indentDepth)
+     {
+         for (int i = 0; i < input->children.size(); i++)
+         {
+             if (input->children[i].index() == 1)
+             {
+                 xmlString += std::get<std::string>(input->children[i]);
+             }
+             else // Type of input -> children[i] is assumed to be squid::xml::node here
+             {
+                 xmlString += fmt::format(
+                     "{}\"{}\":{}", squid::utils::repeatChar(indentDepth, ' '), input->tagName,
+                     input->children[i].index() == 1
+                         ? " "
+                         : "\n" + squid::utils::repeatChar(indentDepth += 2, ' ') + "{\n");
+                 getChildContent(&std::get<node>(input->children[i]), xmlString, indentDepth + 2);
+
+                 xmlString += i + 1 < children.size() ? ",\n" : "";
+             }
+         }
+     }
     std::vector<std::variant<node, std::string>>::iterator childrenIt;
 };
 }; // namespace xml
