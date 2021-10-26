@@ -120,11 +120,12 @@ class node
              }
              else // Type of input -> children[i] is assumed to be squid::xml::node here
              {
+                 indentDepth += 2;
                  xmlString += fmt::format(
                      "{}\"{}\":{}", squid::utils::repeatChar(indentDepth, ' '), input->tagName,
                      input->children[i].index() == 1
                          ? " "
-                         : "\n" + squid::utils::repeatChar(indentDepth += 2, ' ') + "{\n");
+                         : "\n" + squid::utils::repeatChar(indentDepth, ' ') + "{\n");
                  getChildContent(&std::get<node>(input->children[i]), xmlString, indentDepth + 2);
 
                  xmlString += i + 1 < children.size() ? ",\n" : "";

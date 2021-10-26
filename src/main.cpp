@@ -54,5 +54,5 @@ int main()
         }
     }
 
-    std::cout << tokenTree.getJSON();
+//    std::cout << tokenTree.getJSON();
 }
