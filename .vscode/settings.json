@@ -99,6 +99,7 @@
         "stack": "cpp",
         "forward_list": "cpp",
         "valarray": "cpp",
-        "span": "cpp"
+        "span": "cpp",
+        "__bits": "cpp"
     }
 }
