@@ -32,9 +32,9 @@ Found out problem with ways to fix string, went to the source and making broken 
 
 ### 2021-10-14 - 5 Hours
 Thought of ways to implement basic tree structure. At first I thought of using JSON to implement but using third party json libaries was a pain, I ran into issues with accessing child nodes recursivly. I then tried to use third party xml libaries, and I ran into the same problem. I ended up making my own xml like class. At first I was thinking of storing types in a vector with some sort of location table but I ended up making a `node` class that contains a vector of `std::variant`s of strings or nodes. I then overloaded the index operator. 
-<<<<<<< HEAD
 
 ### 2021-10-21 - 2.5 Hours
 Got get child by index vector working. My idea of using a for loop and reference didn't work. Instead I had to use some new c++20 features like std::span. I thought that migrating from XML to JSON would be cleaner so I started work on that.
-=======
->>>>>>> 25987e58cdb2582657b341752bd9b45a0d1528e3
+
+### 2021-10-28 2 Hours
+Worked on implementing AST parsers, struglled with seg faults. I tried to find the problem using a debugger but that didn't work. Sometimes if it hadn't been run in a while it wouldn't segfault. Also, sometimes instead of throwing a segfault it would throw a c++ vector access runtime error. Another error that got thrown, albiet less frequently, was type: vector std::length_error
