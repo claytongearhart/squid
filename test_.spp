@@ -1,4 +1,12 @@
 int main()
 {
     stl::console << "Hello, World!";
+
+    {
+        x
+    }
+
+    {
+        x
+    }
 }

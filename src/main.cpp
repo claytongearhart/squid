@@ -41,6 +41,7 @@ int main()
         {
             std::cout << "l42\n";
             tokenTree.getNodeByLocationVector(locationVec).addNode(squid::object::node("open"));
+            locationVec.push_back(0);
         }
         else if (tokenList[i].value == "}" && tokenList[i].type == squid::delimiterToken)
         {

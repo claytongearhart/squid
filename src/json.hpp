@@ -68,7 +68,7 @@ class node
         return accessNode(this, locationVec);
     }
 
-    std::variant<node, std::string> addNode(std::variant<node, std::string> child, std::optional< unsigned int> index = {})
+    void addNode(std::variant<node, std::string> child, std::optional< unsigned int> index = {})
     {
         if (index.has_value())
         {
@@ -77,11 +77,11 @@ class node
 
         children.insert(childrenIt, child);
 
-        return children[index.value()];
+        return;
         }
         else {
             children.insert(children.end(), child);
-            return children[children.size()];
+            return;
         }
     }
     std::string tagName;
