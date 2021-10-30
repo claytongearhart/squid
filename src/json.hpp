@@ -39,93 +39,80 @@ namespace squid
     namespace object
     {
 
-    class child
-    {
-      public:
-        child(const char input[])
-        {
-            value = input;
-            type = string;
-        }
+    // class child
+    // {
+    //   public:
+    //     child(const char input[])
+    //     {
+    //         value = input;
+    //         type = string;
+    //     }
 
-        child(squid::tokenTypes input)
-        {
-            value = input;
-            type = tokenTypesEnum;
-        }
+    //     child(squid::tokenTypes input)
+    //     {
+    //         value = input;
+    //         type = tokenTypesEnum;
+    //     }
 
-        child(int input)
-        {
-            value = input;
-            type = num;
-        }
+    //     template <typename num>
+    //     requires Number<num> child(num input)
+    //     {
+    //         value = input;
+    //         type = "num;
+    //     }
 
-        operator std::string()
-        {
-            std::string returnValue;
-            switch (type)
-            {
-            case string:
-                returnValue = fromString(std::get<std::string>(value));
-            case num:
-                returnValue = fromNum(std::get<int>(value));
-            case tokenTypesEnum:
-                returnValue = fromTokenTypesEnum(std::get<tokenTypes>(value));
-            }
-        }
+    //     operator std::string()
+    //     {
+    //         switch(type)
+    //         {
+    //             case "string":
+    //         }
+    //     }
 
-      private:
-        std::variant<std::string, int, squid::tokenTypes> value;
-        enum types
-        {
-            string,
-            tokenTypesEnum,
-            num
-        };
-        types type;
+    //   private:
+    //     std::any value;
+    //     enum types {
+    //         string,
+    //         tokenTypesEnum,
+    //         num
+    //     };
+    //     types type;
 
-        // Converters
-        inline std::string fromString(std::string &input)
-        {
-            return "\"" + input + "\"";
-        }
+    //     // Converters
+    //     inline std::string fromString(std::string& input)
+    //     {
+    //         return "\"" + input + "\"";
+    //     }
 
-        template <typename num>
-        requires Number<num>
-        inline std::string fromNum(num input)
-        {
-            return std::to_string(input);
-        }
+    //     template <typename num> requires Number<num>
+    //     inline std::string fromNum(num input)
+    //     {
+    //         return std::to_string(input);
+    //     }
 
-        std::string fromTokenTypesEnum(squid::tokenTypes input)
-        {
-            std::string returnValue;
-            switch (input)
-            {
-            case boolToken:
-                returnValue = "Boolean Token";
-            case delimiterToken:
-                returnValue = "Delimiter Token";
-            case digitToken:
-                returnValue = "Digit Token";
-            case keywordToken:
-                returnValue = "Keyword Token";
-            case operatorToken:
-                returnValue = "Operator Token";
-            case stringToken:
-                returnValue = "String Token";
-            default:
-                "Other token";
-            };
-        }
-    };
+    //     std::string fromTokenTypesEnum(squid::tokenTypes input)
+    //     {
+    //         std::string returnValue;
+    //         switch (input)
+    //         {
+    //             case boolToken: returnValue = "Boolean Token";
+    //             case delimiterToken: returnValue = "Delimiter Token";
+    //             case digitToken: returnValue = "Digit Token";
+    //             case keywordToken: returnValue = "Keyword Token";
+    //             case operatorToken: returnValue = "Operator Token";
+    //             case stringToken: returnValue = "String Token";
+    //             default: "Other token";
+    //         };
+    //          return returnValue;
+    //     }
+    // };
 
     class node
     {
       public:
-        std::vector<std::variant<node, child>> children;
+        std::vector<std::variant<node, std::string>> children;
         node(std::string name,
-             std::optional<std::variant<std::variant<node, child>, std::vector<node>>>
+             std::optional<std::variant<std::variant<node, std::string>, std::vector<node>>>
                  content = {})
         {
             tagName = name;
@@ -133,7 +120,7 @@ namespace squid
             {
                 if (content.value().index() != 2)
                 {
-                    addNode(std::get<std::variant<node, child>>(content.value()), 0);
+                    addNode(std::get<std::variant<node, std::string>>(content.value()), 0);
                 }
 
                 else
@@ -172,7 +159,7 @@ namespace squid
             return accessNode(this, locationVec);
         }
 
-        void addNode(std::variant<node, child> child, std::optional<unsigned int> index = {})
+        void addNode(std::variant<node, std::string> child, std::optional<unsigned int> index = {})
         {
             if (index.has_value())
             {
@@ -238,7 +225,7 @@ namespace squid
                 }
             }
         }
-        std::vector<std::variant<node, child>>::iterator childrenIt;
+        std::vector<std::variant<node, std::string>>::iterator childrenIt;
     };
     }; // namespace object
 

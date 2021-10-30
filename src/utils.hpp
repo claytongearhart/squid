@@ -35,6 +35,22 @@ enum tokenTypes
     other
 };
 
+std::string tokenTypeToString(tokenTypes input)
+{
+                std::string returnValue;
+            switch (input)
+            {
+                case boolToken: returnValue = "Boolean Token";
+                case delimiterToken: returnValue = "Delimiter Token";
+                case digitToken: returnValue = "Digit Token";
+                case keywordToken: returnValue = "Keyword Token";
+                case operatorToken: returnValue = "Operator Token";
+                case stringToken: returnValue = "String Token";
+                default: "Other token";
+            };
+             return returnValue;
+}
+
 namespace object
 {
 class object
