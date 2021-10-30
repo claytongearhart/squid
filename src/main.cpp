@@ -51,7 +51,7 @@ int main()
         else
         {
             std::cout << "l52\n";
-            tokenTree.getNodeByLocationVector(locationVec).addNode(tokenList[i].value);
+            tokenTree.getNodeByLocationVector(locationVec).addNode("", squid::object::node({squid::object::node("type", tokenList[i].type), squid::object::node("value", tokenList[i].value)}) );
         }
     }
 
