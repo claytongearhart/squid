@@ -52,13 +52,14 @@ int main()
         {
             std::cout << "l52\n";
             tokenTree.getNodeByLocationVector(locationVec)
-                .addNode(squid::object::node(
-                                   "pp", std::vector<squid::object::node> {
-                                             squid::object::node("type", squid::tokenTypeToString(
-                                                                             tokenList[i].type)),
-                                             squid::object::node("value", tokenList[i].value)}));
+                .addNode(squid::object::node("token", std::vector<squid::object::node> {squid::object::node("type", squid::tokenTypeToString(tokenList[i].type)), squid::object::node("value", tokenList[i].value)}));
         }
     }
 
     std::cout << tokenTree.getJSON();
+
+    // for (int i = 0; i < tokenList.size(); i++)
+    // {
+    //     std::cout << fmt::format("{} with value {}\n", squid::tokenTypeToString(tokenList[i].type), tokenList[i].value);
+    // }
 }

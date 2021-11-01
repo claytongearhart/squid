@@ -1,1 +1,4 @@
-int main(){stl::console << "Hello, World!";}
+int main()
+{
+    stl::console << "Hello, World!";
+}

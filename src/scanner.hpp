@@ -121,12 +121,13 @@ class scanner
                                                                      : squid::other;
     }
 
+    // Tokens would have reminant of last token on current token if size < 1 so this removes it
     void refineTokens()
     {
         std::vector<squid::token> tempFullTokens;
         for (int i = 0; i < fullTokens.size(); i++)
         {
-            if (!(fullTokens[i].value.length() == 1))
+            if (fullTokens[i].value.length() != 1)
             {
                 auto beginTokenValue =
                     fullTokens[i].value.substr(0, fullTokens[i].value.size() - 1);
@@ -195,10 +196,21 @@ class scanner
             lastPos = pos + 1;
         }
     }
+    void sanatizeTokens()
+    {
+        for (int i = 0; i < fullTokens.size(); i++)
+        {
+            if (squid::utils::isSpace(fullTokens[i].value[0]))
+            {
+                fullTokens.erase(fullTokens.begin() + i);
+            }
+        }
+    }
     void analyze(std::string input)
     {
         findStrings(input);
         split(input);
         refineTokens();
+        sanatizeTokens();
     }
 };

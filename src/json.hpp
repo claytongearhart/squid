@@ -51,7 +51,7 @@ namespace squid
             tagName = name;
             if (content.has_value())
             {
-                if (content.value().index() != 2)
+                if (content.value().index() != 1)
                 {
                     addNode(std::get<std::variant<node, std::string>>(content.value()), 0);
                 }
@@ -67,6 +67,10 @@ namespace squid
                 }
             }
         }
+        // node(std::string name, std::optional<std::vector<node>> content = {})
+        // {
+
+        // }
         node operator[](int index)
         {
             return std::get<node>(children[index]);
@@ -134,6 +138,7 @@ namespace squid
             return xmlString;
         }
 
+       
       private:
         void getChildContent(node *input, std::string &xmlString, unsigned int indentDepth)
         {
@@ -147,10 +152,10 @@ namespace squid
                 {
                     indentDepth += 2;
                     xmlString += fmt::format(
-                        "{}\"{}\":{}", squid::utils::repeatChar(indentDepth, ' '), input->tagName,
+                        "{}\"{}\":{}{}", squid::utils::repeatChar(indentDepth, ' '), input->tagName,
                         input->children[i].index() == 1
                             ? " "
-                            : "\n" + squid::utils::repeatChar(indentDepth, ' ') + "{\n");
+                            : "\n" + squid::utils::repeatChar(indentDepth, ' ') + "{\n", input->children[i].index() == 1 ? "" : "\n}");
                     getChildContent(&std::get<node>(input->children[i]), xmlString,
                                     indentDepth + 2);
 
