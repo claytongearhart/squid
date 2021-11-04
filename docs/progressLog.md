@@ -34,19 +34,19 @@ Found out problem with ways to fix string, went to the source and making broken 
 Thought of ways to implement basic tree structure. At first I thought of using JSON to implement but using third party json libaries was a pain, I ran into issues with accessing child nodes recursivly. I then tried to use third party xml libaries, and I ran into the same problem. I ended up making my own xml like class. At first I was thinking of storing types in a vector with some sort of location table but I ended up making a `node` class that contains a vector of `std::variant`s of strings or nodes. I then overloaded the index operator. 
 
 ### 2021-10-21 - 2.5 Hours
-Got get child by index vector working. My idea of using a for loop and reference didn't work. Instead I had to use some new c++20 features like std::span. I thought that migrating from XML to JSON would be cleaner so I started work on that.
+Got get child by index vector working. My idea of using a for loop and reference didn't work. Instead I had to use some new c++20 features like `std::span`. I thought that migrating from XML to JSON would be cleaner so I started work on that.
 
 ### 2021-10-28 2 Hours
 Worked on implementing AST parsers, struglled with segmentation faults / illegal memory access. I tried to find the problem using a debugger but that didn't work. I observed that it was less likley to segfault on a cold run. Also, sometimes instead of throwing a segfault it would throw a c++ vector access runtime error. Another error that got thrown, albiet less frequently, was `type: vector std::length_error`
 
 ### 2021-10-29 4 Hours
-Got segfaults fixed(mostly), will still cause if input file is above a certian length which is pretty curious. Then worked on adding more information such as token type. I ran into an error here with explicit conversion which led me to having my object class accepting more types than just strings. This lead to down a rabbit-hole of exploring different types of constructors until I finally found the conversion constructor I need for the `node` class.
+Got segfaults fixed(mostly), will still cause if input file is above a certian length which is pretty curious. Then worked on adding more information such as token type. I ran into an error here with explicit conversion which led me to having my object class accepting types other than `std::string`. This lead me down a rabbit-hole of exploring different constructors types until I finally found the conversion constructor I need for the `node` class.
 
 ### 2021-10-30 - 2 Hours
-Spent a lot of time trying to get child class to work, ended giving up on it. However I decided to solve my problem by converting enums to string when they first get inserted and had the idea of overloading the constructor on the `node` class instead of using std::variants which have been the cause of so many problems. 
+I spent a lot of time trying to get child class to work, ended giving up on it. However I decided to solve my problem by converting enums to string when they first get inserted and had the idea of overloading the constructor on the `node` class instead of using std::variants which have been the cause of so many problems. 
 
 ### 2021-11-2 - 1 Hour
 I had the idea to give up deserializing raw scope depth object and instead only serialize more complex object with word types and an more context of the content. I then wrote the necessary code for it
 
 ### 2021-11-4 - NaN
-I brainstormed ideas for entire word namespace. I want to utilize inheritance and polymorphism because I've never used them before. I'm planning on having base classes of `word` and `objectCall` and then have derived objects for every `word` such as `variable` and `function` derived from `word` and have objects such as `variableAccess` and `function` will be derived from `objectCall`. 
+I brainstormed ideas for a `word` namespace. I want to utilize inheritance and polymorphism so I'm planning on having base classes of `word` and `objectCall` and then have derived objects for every `word` such as `variable` and `function` derived from `word`. I would have objects such as `variableAccess` and `function` will be derived from `objectCall`. 
