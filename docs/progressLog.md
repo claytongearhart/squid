@@ -46,7 +46,7 @@ Got segfaults fixed(mostly), will still cause if input file is above a certian l
 Spent a lot of time trying to get child class to work, ended giving up on it. However I decided to solve my problem by converting enums to string when they first get inserted and had the idea of overloading the constructor on the `node` class instead of using std::variants which have been the cause of so many problems. 
 
 ### 2021-11-2 - 1 Hour
-Had the idea to give up deserializing raw scope depth object and instead only serialize more complex object with word types and an more context of the content. I then wrote the necessary code for it
+I had the idea to give up deserializing raw scope depth object and instead only serialize more complex object with word types and an more context of the content. I then wrote the necessary code for it
 
 ### 2021-11-4 - NaN
 I brainstormed ideas for entire word namespace. I want to utilize inheritance and polymorphism because I've never used them before. I'm planning on having base classes of `word` and `objectCall` and then have derived objects for every `word` such as `variable` and `function` derived from `word` and have objects such as `variableAccess` and `function` will be derived from `objectCall`. 
