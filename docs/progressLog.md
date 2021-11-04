@@ -42,11 +42,11 @@ Worked on implementing AST parsers, struglled with seg faults. I tried to find t
 ### 2021-10-29 4 Hours
 Got segfaults fixed(mostly), will still cause if input file is above a certian length which is pretty curious. Then worked on adding more information such as token type. I ran into an error here with explicit conversion which led me to having my object class accepting more types than just strings. This lead to down a rabbit-hole of exploring different types of constructors until I finally found the conversion constructor I need.
 
-### 2021-10-30 
+### 2021-10-30 - 2 Hours
 Spent a lot of time trying to get child class to work, ended giving up on it. However I decided to solve my problem by converting enums to string when they first get inserted and had the idea of overloading the constructor on the `node` class instead of using std::variants which have been the cause of so many problems. 
 
-### 2021-11-2
-Had the idea to give up deserializing raw scope depth object and instead only serialize more complex object with word types and an more context of the content.
+### 2021-11-2 - 1 Hour
+Had the idea to give up deserializing raw scope depth object and instead only serialize more complex object with word types and an more context of the content. I then wrote the necessary code for it
 
-### 2021-11-4
+### 2021-11-4 - NaN
 I brainstormed ideas for entire word namespace. I want to utilize inheritance and polymorphism because I've never used them before. I'm planning on having base classes of `word` and `objectCall` and then have derived objects for every `word` such as `variable` and `function` derived from `word` and have objects such as `variableAccess` and `function` will be derived from `objectCall`. 
