@@ -1,7 +1,9 @@
 #include <vector>
 #include <algorithm>
+#include <utility>
 #include <string>
 #include "utils.hpp"
+#include "errors.hpp"
 
 namespace squid
 {
@@ -13,43 +15,19 @@ namespace squid
             std::vector<squid::word::any> children;
     };
 
+    class objectCall
+    {
+        public:
+        
+    };
+
     namespace word
     {
-        class types
+
+        class type
         {
-            public:
-
-                types(std::vector<squid::token> input)
-                {
-                    if(std::find(std::begin(literalTypes), std::end(literalTypes), input.back().value) == std::end(literalTypes));
-                    {
-                        // Throw error
-                    }
-                }
-
-                
-
-                enum baseTypes 
-                {
-                    integer,
-                    decimal,
-                    character
-                } baseType;
-
-                enum signage: bool
-                {
-                    signed_m,
-                    unsigned_m
-                };
-
-                bool isArray;
-
-                unsigned short size;
-
-            private:
-                                const std::string literalTypes[4] = {"string", "char", "int", "float"};
+            
         };
-
 
         class any
         {
@@ -59,17 +37,58 @@ namespace squid
 
         class variable : public squid::word
         {
+            public:
+                variable()
+                {
 
+                }
+            private:
+                void initialize()
+                {
+
+                }
+
+                squid::error monitor()
+                {
+                    bool isErrorPresent;
+                    squid::error returnObject();
+
+                    if (!isErrorPresent)
+                    {
+                        returnObject.isThere = false;
+                    }
+                }
+
+                bool isReference;
+                variable referenceTo();
         };
 
         class function : public squid::word
         {
-
+            public:
+                type returnType;
+                std::vector<std::pair<type, variable>> arguments;
         };
 
         class literal : public squid::word
         {
 
+        };
+
+        // Call Tokens
+        
+        class variableAccess : public squid::objectCall
+        {
+            variableAccess(literal input)
+            {
+
+            }
+        };
+
+        class functionCall : public squid::objectCall
+        {
+            public:
+                std::vector<std::pair<type, variableAccess>> arguments;
         };
     }
 }

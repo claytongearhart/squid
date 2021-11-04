@@ -56,10 +56,7 @@ int main()
         }
     }
 
-    std::cout << tokenTree.getJSON();
 
-    // for (int i = 0; i < tokenList.size(); i++)
-    // {
-    //     std::cout << fmt::format("{} with value {}\n", squid::tokenTypeToString(tokenList[i].type), tokenList[i].value);
-    // }
+    
+
 }
