@@ -37,7 +37,7 @@ Thought of ways to implement basic tree structure. At first I thought of using J
 Got get child by index vector working. My idea of using a for loop and reference didn't work. Instead I had to use some new c++20 features like std::span. I thought that migrating from XML to JSON would be cleaner so I started work on that.
 
 ### 2021-10-28 2 Hours
-Worked on implementing AST parsers, struglled with seg faults. I tried to find the problem using a debugger but that didn't work. I observed that it was less likley to seg fault on a cold run. Also, sometimes instead of throwing a segfault it would throw a c++ vector access runtime error. Another error that got thrown, albiet less frequently, was `type: vector std::length_error`
+Worked on implementing AST parsers, struglled with segmentation faults / illegal memory access. I tried to find the problem using a debugger but that didn't work. I observed that it was less likley to segfault on a cold run. Also, sometimes instead of throwing a segfault it would throw a c++ vector access runtime error. Another error that got thrown, albiet less frequently, was `type: vector std::length_error`
 
 ### 2021-10-29 4 Hours
 Got segfaults fixed(mostly), will still cause if input file is above a certian length which is pretty curious. Then worked on adding more information such as token type. I ran into an error here with explicit conversion which led me to having my object class accepting more types than just strings. This lead to down a rabbit-hole of exploring different types of constructors until I finally found the conversion constructor I need for the `node` class.
