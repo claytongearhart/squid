@@ -40,7 +40,7 @@ Got get child by index vector working. My idea of using a for loop and reference
 Worked on implementing AST parsers, struglled with seg faults. I tried to find the problem using a debugger but that didn't work. Sometimes if it hadn't been run in a while it wouldn't segfault. Also, sometimes instead of throwing a segfault it would throw a c++ vector access runtime error. Another error that got thrown, albiet less frequently, was type: vector std::length_error
 
 ### 2021-10-29 4 Hours
-Got segfaults fixed(mostly), will still cause if input file is above a certian length which is pretty curious. Then worked on adding more information such as token type. I ran into an error here with explicit conversion which led me to having my object class accepting more types than just strings. This lead to down a rabbit-hole of exploring different types of constructors until I finally found the conversion constructor I need.
+Got segfaults fixed(mostly), will still cause if input file is above a certian length which is pretty curious. Then worked on adding more information such as token type. I ran into an error here with explicit conversion which led me to having my object class accepting more types than just strings. This lead to down a rabbit-hole of exploring different types of constructors until I finally found the conversion constructor I need for the `node` class.
 
 ### 2021-10-30 - 2 Hours
 Spent a lot of time trying to get child class to work, ended giving up on it. However I decided to solve my problem by converting enums to string when they first get inserted and had the idea of overloading the constructor on the `node` class instead of using std::variants which have been the cause of so many problems. 
