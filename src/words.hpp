@@ -1,94 +1,49 @@
-#include <vector>
-#include <algorithm>
-#include <utility>
-#include <string>
-#include "utils.hpp"
 #include "errors.hpp"
+#include "utils.hpp"
+#include <algorithm>
+#include <string>
+#include <utility>
+#include <any>
+#include <vector>
 
 namespace squid
 {
-    class word
+    class scope
     {
-        public:
-            std::string identifier;
-        protected:
-            std::vector<squid::word::any> children;
+
     };
 
-    class objectCall
+namespace word
+{
+class any
+{
+};
+
+class type
+{
+
+};
+
+class variable
+{
+    public:
+        std::any value;
+    private:
+        squid::scope accessScope;
+        squid::word::type varType;
+};
+class function
+{
+  public:
+    variable call(std::vector<variable> callArguments)
     {
-        public:
-        
-    };
 
-    namespace word
-    {
-
-        class type
-        {
-            
-        };
-
-        class any
-        {
-            public:
-
-        };
-
-        class variable : public squid::word
-        {
-            public:
-                variable()
-                {
-
-                }
-            private:
-                void initialize()
-                {
-
-                }
-
-                squid::error monitor()
-                {
-                    bool isErrorPresent;
-                    squid::error returnObject();
-
-                    if (!isErrorPresent)
-                    {
-                        returnObject.isThere = false;
-                    }
-                }
-
-                bool isReference;
-                variable referenceTo();
-        };
-
-        class function : public squid::word
-        {
-            public:
-                type returnType;
-                std::vector<std::pair<type, variable>> arguments;
-        };
-
-        class literal : public squid::word
-        {
-
-        };
-
-        // Call Tokens
-        
-        class variableAccess : public squid::objectCall
-        {
-            variableAccess(literal input)
-            {
-
-            }
-        };
-
-        class functionCall : public squid::objectCall
-        {
-            public:
-                std::vector<std::pair<type, variableAccess>> arguments;
-        };
     }
-}
+  private:
+    std::vector<any> definition;
+    std::vector<variable> arguments;
+    squid::word::type returnType;
+
+};
+} // namespace word
+} // namespace squid
