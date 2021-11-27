@@ -49,4 +49,7 @@ Spent a lot of time trying to get child class to work, ended giving up on it. Ho
 Had the idea to give up deserializing raw scope depth object and instead only serialize more complex object with word types and an more context of the content. I then wrote the necessary code for it
 
 ### 2021-11-4 - NaN
-I brainstormed ideas for entire word namespace. I want to utilize inheritance and polymorphism because I've never used them before. I'm planning on having base classes of `word` and `objectCall` and then have derived objects for every `word` such as `variable` and `function` derived from `word` and have objects such as `variableAccess` and `function` will be derived from `objectCall`. 
+I brainstormed ideas for entire word namespace. I want to utilize inheritance and polymorphism because I've never used them before. I'm planning on having base classes of `word` and `objectCall` and then have derived objects for every `word` such as `variable` and `function` derived from `word` and have objects such as `variableAccess` and `function` will be derived from `objectCall`.
+
+## 2021-11-27 - 3 Hours
+While I was trying to figure out my AST, I noticed that most of the publications I read did everything quite a bit differently that I had so I decided to overhaul everything. I consolidated my scanner and preprocessor into one source file that compiles to one executable and I plan on writing my AST in python because of there are more resources also I think the implicit and dynamic nature of python will help.

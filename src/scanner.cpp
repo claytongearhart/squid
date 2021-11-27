@@ -1,14 +1,92 @@
-#include "utils.hpp"
 #include <algorithm>
+#include <fmt/format.h>
 #include <fstream>
 #include <iostream>
 #include <iterator>
 #include <numeric>
 #include <set>
 #include <sstream>
+#include <stdint.h>
 #include <string>
 #include <utility>
 #include <vector>
+
+namespace squid
+{
+
+enum tokenTypes
+{
+    boolToken,
+    delimiterToken,
+    digitToken,
+    keywordToken,
+    operatorToken,
+    stringToken,
+    other
+};
+
+std::string tokenTypeToString(tokenTypes input)
+{
+    switch (input)
+    {
+    case boolToken:
+        return "Boolean Token";
+    case delimiterToken:
+        return "Delimiter Token";
+    case digitToken:
+        return "Digit Token";
+    case keywordToken:
+        return "Keyword Token";
+    case operatorToken:
+        return "Operator Token";
+    case stringToken:
+        return "String Token";
+    case other:
+        return "Unknown Token Type";
+    };
+}
+
+class token
+{
+  public:
+    tokenTypes type;
+    size_t location;
+    std::string value;
+    std::string scopeDepth;
+
+    token(tokenTypes inputType, std::string inputValue, size_t inputLocation)
+    {
+        type = inputType;
+        value = inputValue;
+        location = inputLocation;
+    }
+};
+
+namespace utils
+{
+
+bool isSpace(unsigned char c)
+{
+    return (c == ' ' || c == '\n' || c == '\r' || c == '\t' || c == '\v' || c == '\f');
+}
+
+bool isInStringVec(std::vector<std::string> a, std::string o)
+{
+    return std::find(a.begin(), a.end(), o) != a.end();
+}
+bool isInCharArray(std::string a, const char o)
+{
+    for (int i = 0; i < a.length(); i++)
+    {
+        if (o == a[i])
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+} // namespace utils
 
 class scanner
 {
@@ -196,7 +274,7 @@ class scanner
             lastPos = pos + 1;
         }
     }
-    void sanatizeTokens()
+    void sanitizeTokens()
     {
         for (int i = 0; i < fullTokens.size(); i++)
         {
@@ -211,6 +289,43 @@ class scanner
         findStrings(input);
         split(input);
         refineTokens();
-        sanatizeTokens();
+        sanitizeTokens();
     }
 };
+
+} // namespace squid
+
+int main(int argc, char *argv[])
+{
+
+    squid::scanner mainScanner;
+
+    std::ifstream source(argv[1]);
+    std::string sourceString((std::istreambuf_iterator<char>(source)),
+                             std::istreambuf_iterator<char>());
+
+    mainScanner.analyze(sourceString);
+    std::vector<squid::token> tokenList = mainScanner.fullTokens;
+
+    std::cout << mainScanner.fullTokens.size();
+    for (int i = 0; i < tokenList.size(); i++)
+    {
+        std::cout << tokenList[i].value << " : " << tokenList[i].type << '\n';
+    }
+
+    std::ofstream tokenJson;
+    tokenJson.open("tokens.json");
+    tokenJson << "[\n";
+
+    for (int i = 0; i < tokenList.size(); i++)
+    {
+        if (tokenList[i].value != "\n")
+        {
+            tokenJson << fmt::format("{{\n\t\"type\": \"{}\",\n\t\"value\": \"{}\"\n}}{}\n",
+                                     squid::tokenTypeToString(tokenList[i].type),
+                                     tokenList[i].value, i+1 == tokenList.size() ? "" : ",");
+        }
+    }
+    tokenJson << "]";
+    tokenJson.close();
+}
