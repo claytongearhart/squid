@@ -5,7 +5,6 @@
 #include <iostream>
 #include <nlohmann/json.hpp>
 #include <stdint.h>
-// using json = nlohmann::json;
 
 int main()
 {
@@ -55,6 +54,8 @@ int main()
                 .addNode(squid::object::node("token", std::vector<squid::object::node> {squid::object::node("type", squid::tokenTypeToString(tokenList[i].type)), squid::object::node("value", tokenList[i].value)}));
         }
     }
+
+    // AST parser
 
 
     
