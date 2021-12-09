@@ -50,3 +50,9 @@ I had the idea to give up deserializing raw scope depth object and instead only 
 
 ### 2021-11-4 - NaN
 I brainstormed ideas for a `word` namespace. I want to utilize inheritance and polymorphism so I'm planning on having base classes of `word` and `objectCall` and then have derived objects for every `word` such as `variable` and `function` derived from `word`. I would have objects such as `variableAccess` and `function` will be derived from `objectCall`. 
+
+## 2021-11-28 - NaN
+Over the past few weeks I've had lots of problems with implementing my AST. First I thought to completed rewrite my AST by just having structs with pointers for sub structs to make a binary tree because that's how I solved the problem for my lexer. Then I looked for other ways and stumbled across a way to do it in python, which looked intruging because python is a high level lanuage so it would be easier to implement things like class objects representing words because I can dynamically allocated and define them. To get started on this I first thought to write the IPC layer, which would be started by the master script at runtime and called via a shell pipe to read a file written by the main proccess and would then process and output a processed json or xml file. Once I actually started work I found I couldn't use a shell pipe like I orginally wanted, so I compromised by only invoking the python script once the file had been outputed by the main process. Once I had finished this is only got more difficult. I couldn't even begin to make the actual AST. After sevral hours of googling I still couldn't figure out how to use both binary and unary operators in the same block.
+
+## 2021-12-02
+I still can't figure out how to make the AST, I've been thinking about switching my project to something still realted to computer science but not this low level, like a search engine.
