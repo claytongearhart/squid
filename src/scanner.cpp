@@ -1,15 +1,16 @@
-#include <algorithm>
-#include <fmt/format.h>
-#include <fstream>
-#include <iostream>
-#include <iterator>
-#include <numeric>
-#include <set>
-#include <sstream>
-#include <stdint.h>
-#include <string>
-#include <utility>
 #include <vector>
+#include <utility>
+#include <string>
+#include <stdint.h>
+#include <sstream>
+#include <set>
+#include <numeric>
+#include <map>
+#include <iterator>
+#include <iostream>
+#include <fstream>
+#include <fmt/format.h>
+#include <algorithm>
 
 namespace squid
 {
@@ -22,6 +23,8 @@ enum tokenTypes
     keywordToken,
     operatorToken,
     stringToken,
+    typeToken,
+    varNameToken,
     other
 };
 
@@ -41,6 +44,10 @@ std::string tokenTypeToString(tokenTypes input)
         return "Operator Token";
     case stringToken:
         return "String Token";
+    case typeToken:
+        return "Type Token";
+    case varNameToken:
+        return "Variable Name Token";
     case other:
         return "Unknown Token Type";
     };
@@ -96,8 +103,9 @@ class scanner
 
                              delimiterTokens = {"(", ")", "{", "}", ";", ","},
 
-                             keywordTokens = {"int", "float",  "auto",  "double",
-                                              "do",  "switch", "return"},
+                             keywordTokens = {"int", "auto", "do", "switch", "return", "class"},
+
+                             typeTokens = {"int", "float", "double"},
 
                              operatorTokens = {"<", ">",  "<=", ">=", "*",  "+",  "-",  "/",
                                                "=", "-=", "*=", "+=", "/=", "++", "--", "=="};
@@ -190,10 +198,10 @@ class scanner
     squid::tokenTypes tokenType(std::string token)
     {
 
-        return squid::utils::isInStringVec(operatorTokens, token)    ? squid::boolToken
+        return squid::utils::isInStringVec(operatorTokens, token)    ? squid::operatorToken
                : squid::utils::isInStringVec(delimiterTokens, token) ? squid::delimiterToken
                : squid::utils::isInStringVec(keywordTokens, token)   ? squid::keywordToken
-               : squid::utils::isInStringVec(boolTokens, token)      ? squid::operatorToken
+               : squid::utils::isInStringVec(boolTokens, token)      ? squid::boolToken
                : isString(token)                                     ? squid::stringToken
                : isDigit(token)                                      ? squid::digitToken
                                                                      : squid::other;
@@ -205,7 +213,12 @@ class scanner
         std::vector<squid::token> tempFullTokens;
         for (int i = 0; i < fullTokens.size(); i++)
         {
-            if (fullTokens[i].value.length() != 1)
+            if (fullTokens[i].value == " ")
+            {
+                // Skips token therefore deleting it
+            }
+
+            else if (fullTokens[i].value.length() != 1)
             {
                 auto beginTokenValue =
                     fullTokens[i].value.substr(0, fullTokens[i].value.size() - 1);
@@ -265,7 +278,8 @@ class scanner
 
         std::cout << s;
 
-        while ((pos = find_first_of_delim(s, " []{}()<>+-*/&:.\n\"", lastPos)) != std::string::npos)
+        while ((pos = find_first_of_delim(s, " []{}()<>+-*/&:;.\n\"", lastPos)) !=
+               std::string::npos)
         {
             std::string token = s.substr(lastPos, pos - lastPos + 1);
 
@@ -293,24 +307,86 @@ class scanner
     }
 };
 
+class object
+{
+  public:
+    object(std::string t)
+    {
+        type = t;
+    }
+
+  private:
+    std::string type;
+};
+
+class stage2_anal
+{
+  public:
+    std::vector<squid::token> analSex(std::vector<token> input)
+    {
+        std::vector<squid::token> tempTokens;
+
+        for (int i = 0; i < input.size(); i++)
+        {
+            if (input[i].value == "class")
+            {
+                typenameRef.insert(input[i + 1].value);
+            }
+
+            squid::tokenTypes tokenType;
+            if (typenameRef.count(input[i].value))
+            {
+                tokenType = squid::typeToken;
+            }
+            else if (((tempTokens[i - 1].type == squid::typeToken) &&
+                      (input[i - 2].value != "class")))
+            {
+                objectRef.insert({input[i].value, squid::object(input[i - 1].value)});
+                tokenType = squid::varNameToken;
+            }
+            else if (objectRef.count(input[i].value))
+            {
+                tokenType = squid::varNameToken;
+            }
+            else
+            {
+                tokenType = input[i].type;
+            }
+            tempTokens.push_back({tokenType, input[i].value, input[i].location});
+        }
+        std::cout << objectRef.size() << "\n";
+        return tempTokens;
+    }
+    bool typeExists(std::string inputValue)
+    {
+        return typenameRef.count(inputValue);
+    }
+
+  private:
+    std::set<std::string> typenameRef = {"int", "float", "double"};
+    std::map<std::string, squid::object> objectRef;
+};
+
 } // namespace squid
 
 int main(int argc, char *argv[])
 {
 
     squid::scanner mainScanner;
+    squid::stage2_anal s2;
 
     std::ifstream source(argv[1]);
     std::string sourceString((std::istreambuf_iterator<char>(source)),
                              std::istreambuf_iterator<char>());
 
     mainScanner.analyze(sourceString);
-    std::vector<squid::token> tokenList = mainScanner.fullTokens;
+    std::vector<squid::token> tokenList = s2.analSex(mainScanner.fullTokens);
 
     std::cout << mainScanner.fullTokens.size();
     for (int i = 0; i < tokenList.size(); i++)
     {
-        std::cout << tokenList[i].value << " : " << tokenList[i].type << '\n';
+        std::cout << tokenList[i].value << " : " << squid::tokenTypeToString(tokenList[i].type)
+                  << '\n';
     }
 
     std::ofstream tokenJson;
@@ -323,7 +399,7 @@ int main(int argc, char *argv[])
         {
             tokenJson << fmt::format("{{\n\t\"type\": \"{}\",\n\t\"value\": \"{}\"\n}}{}\n",
                                      squid::tokenTypeToString(tokenList[i].type),
-                                     tokenList[i].value, i+1 == tokenList.size() ? "" : ",");
+                                     tokenList[i].value, i + 1 == tokenList.size() ? "" : ",");
         }
     }
     tokenJson << "]";

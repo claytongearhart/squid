@@ -1,4 +1,6 @@
 int main()
 {
-    stl::console << "Hello, World!";
+    class porn;
+    porn pp;
+    pp = 2;
 }
