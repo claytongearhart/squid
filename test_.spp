@@ -1,6 +1,4 @@
 int main()
 {
-    class porn;
-    porn pp;
-    pp = 2;
+    x = 2 + 2;
 }

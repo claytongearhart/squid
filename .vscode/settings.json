@@ -101,6 +101,7 @@
         "valarray": "cpp",
         "span": "cpp",
         "__bits": "cpp",
-        "any": "cpp"
+        "any": "cpp",
+        "filesystem": "cpp"
     }
 }
