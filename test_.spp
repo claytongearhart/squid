@@ -1,6 +1,1 @@
-int main()
-{
-    class porn;
-    porn pp;
-    pp = 2;
-}
+2 == 2 && 8 > 6;

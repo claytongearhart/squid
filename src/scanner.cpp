@@ -1,16 +1,57 @@
-#include <vector>
-#include <utility>
-#include <string>
-#include <stdint.h>
-#include <sstream>
-#include <set>
-#include <numeric>
-#include <map>
-#include <iterator>
-#include <iostream>
-#include <fstream>
-#include <fmt/format.h>
 #include <algorithm>
+#include <fmt/format.h>
+#include <fstream>
+#include <iostream>
+#include <iterator>
+#include <map>
+#include <numeric>
+#include <set>
+#include <sstream>
+#include <stdint.h>
+#include <string>
+#include <utility>
+#include <vector>
+#include <stdexcept>
+
+unsigned long findNextNL(std::string &input, unsigned long startingPos)
+{
+    for (unsigned long i = startingPos; i < input.length(); i++)
+    {
+        if (input[i] == '\n')
+        {
+            return i;
+        }
+    }
+    throw std::out_of_range("Source code cannot end with comment");
+}
+
+std::string preprocess(std::string input)
+{
+    std::string rString;
+    for (unsigned long i = 0; i < input.length(); i++)
+    {
+        if (input[i] == '/' && input[i + 1] == '/')
+        {
+            i = findNextNL(input, i);
+        }
+        else if (input[i] == '\n' || input[i] == '\t')
+        {
+            rString += ' ';
+        }
+        else
+        {
+            rString += input[i];
+        }
+
+        
+    }
+
+    rString.erase(std::unique(std::begin(rString), std::end(rString), [](unsigned char a, unsigned char b){
+        return std::isspace(a) && std::isspace(b);
+    }), std::end(rString));
+
+    return rString;
+}
 
 namespace squid
 {
@@ -27,31 +68,6 @@ enum tokenTypes
     varNameToken,
     other
 };
-
-std::string tokenTypeToString(tokenTypes input)
-{
-    switch (input)
-    {
-    case boolToken:
-        return "Boolean Token";
-    case delimiterToken:
-        return "Delimiter Token";
-    case digitToken:
-        return "Digit Token";
-    case keywordToken:
-        return "Keyword Token";
-    case operatorToken:
-        return "Operator Token";
-    case stringToken:
-        return "String Token";
-    case typeToken:
-        return "Type Token";
-    case varNameToken:
-        return "Variable Name Token";
-    case other:
-        return "Unknown Token Type";
-    };
-}
 
 class token
 {
@@ -95,6 +111,31 @@ bool isInCharArray(std::string a, const char o)
 }
 } // namespace utils
 
+std::string tokenTypeToString(tokenTypes input)
+{
+    switch (input)
+    {
+    case boolToken:
+        return "Boolean Token";
+    case delimiterToken:
+        return "Delimiter Token";
+    case digitToken:
+        return "Digit Token";
+    case keywordToken:
+        return "Keyword Token";
+    case operatorToken:
+        return "Operator Token";
+    case stringToken:
+        return "String Token";
+    case typeToken:
+        return "Type Token";
+    case varNameToken:
+        return "Variable Name Token";
+    case other:
+        return "Unknown Token Type";
+    };
+}
+
 class scanner
 {
   private:
@@ -108,7 +149,7 @@ class scanner
                              typeTokens = {"int", "float", "double"},
 
                              operatorTokens = {"<", ">",  "<=", ">=", "*",  "+",  "-",  "/",
-                                               "=", "-=", "*=", "+=", "/=", "++", "--", "=="};
+                                               "=", "-=", "*=", "+=", "/=", "++", "--", "==", "&&", "||"};
     std::vector<std::pair<std::string, int>> tokenValues;
     bool isDigit(const std::string &input)
     {
@@ -124,17 +165,17 @@ class scanner
         std::vector<int> quoteLocations;
         std::vector<int> dQuoteLocations;
 
-        for (int i = 0; i < input.size(); i++)
+        for (int i = 0; i < input.size() + 1; i++)
         {
-            bool isEscaped = input[i - 1] == '\\';
+            bool isEscaped = input[i] == '\\';
 
-            if (input[i] == '\"' && !isEscaped)
+            if (input[i + 1] == '\"' && !isEscaped)
             {
-                dQuoteLocations.push_back(i);
+                dQuoteLocations.push_back(i + 1);
             }
-            else if (input[i] == '\'' && !isEscaped)
+            else if (input[i + 1] == '\'' && !isEscaped)
             {
-                quoteLocations.push_back(i);
+                quoteLocations.push_back(i + 1);
             }
         }
         for (int i = 0; i < quoteLocations.size(); i += 2)
@@ -207,7 +248,7 @@ class scanner
                                                                      : squid::other;
     }
 
-    // Tokens would have reminant of last token on current token if size < 1 so this removes it
+    // Tokens would have reminant of last token on current token if size > 1 so this removes it
     void refineTokens()
     {
         std::vector<squid::token> tempFullTokens;
@@ -237,7 +278,7 @@ class scanner
         fullTokens = tempFullTokens;
         tempFullTokens.clear();
 
-        std::string operatorDelims = "<>:=+-";
+        std::string operatorDelims = "<>:=+-&|";
         for (int i = 0; i < fullTokens.size(); i++)
         {
             if (fullTokens[i].value.length() == 1 &&
@@ -275,8 +316,6 @@ class scanner
     void split(std::string s)
     {
         size_t pos = 0, lastPos = 0;
-
-        std::cout << s;
 
         while ((pos = find_first_of_delim(s, " []{}()<>+-*/&:;.\n\"", lastPos)) !=
                std::string::npos)
@@ -322,10 +361,11 @@ class object
 class stage2_anal
 {
   public:
+    std::set<std::string> typenameRef = {"int", "float", "double"};
+
     std::vector<squid::token> analSex(std::vector<token> input)
     {
         std::vector<squid::token> tempTokens;
-
         for (int i = 0; i < input.size(); i++)
         {
             if (input[i].value == "class")
@@ -338,7 +378,7 @@ class stage2_anal
             {
                 tokenType = squid::typeToken;
             }
-            else if (((tempTokens[i - 1].type == squid::typeToken) &&
+            else if (((input[i - 1].type == squid::tokenTypes::typeToken) && // This top eval is responsible for the seg faults
                       (input[i - 2].value != "class")))
             {
                 objectRef.insert({input[i].value, squid::object(input[i - 1].value)});
@@ -352,10 +392,12 @@ class stage2_anal
             {
                 tokenType = input[i].type;
             }
+
             tempTokens.push_back({tokenType, input[i].value, input[i].location});
         }
-        std::cout << objectRef.size() << "\n";
-        return tempTokens;
+                return tempTokens;
+
+
     }
     bool typeExists(std::string inputValue)
     {
@@ -363,7 +405,6 @@ class stage2_anal
     }
 
   private:
-    std::set<std::string> typenameRef = {"int", "float", "double"};
     std::map<std::string, squid::object> objectRef;
 };
 
@@ -371,18 +412,20 @@ class stage2_anal
 
 int main(int argc, char *argv[])
 {
-
     squid::scanner mainScanner;
     squid::stage2_anal s2;
 
+
     std::ifstream source(argv[1]);
-    std::string sourceString((std::istreambuf_iterator<char>(source)),
-                             std::istreambuf_iterator<char>());
+    std::string sourceString = preprocess(std::string((std::istreambuf_iterator<char>(source)),
+                             std::istreambuf_iterator<char>()));
+
+    std::cout << sourceString << '\n';
 
     mainScanner.analyze(sourceString);
-    std::vector<squid::token> tokenList = s2.analSex(mainScanner.fullTokens);
+    std::vector<squid::token> tokenList(s2.analSex(mainScanner.fullTokens));
 
-    std::cout << mainScanner.fullTokens.size();
+
     for (int i = 0; i < tokenList.size(); i++)
     {
         std::cout << tokenList[i].value << " : " << squid::tokenTypeToString(tokenList[i].type)
@@ -391,17 +434,24 @@ int main(int argc, char *argv[])
 
     std::ofstream tokenJson;
     tokenJson.open("tokens.json");
-    tokenJson << "[\n";
+    tokenJson << "{\n\"tokens\": [\n"; 
 
     for (int i = 0; i < tokenList.size(); i++)
     {
         if (tokenList[i].value != "\n")
         {
-            tokenJson << fmt::format("{{\n\t\"type\": \"{}\",\n\t\"value\": \"{}\"\n}}{}\n",
-                                     squid::tokenTypeToString(tokenList[i].type),
-                                     tokenList[i].value, i + 1 == tokenList.size() ? "" : ",");
+        tokenJson << fmt::format("{{\n\t\"type\": \"{}\",\n\t\"value\": \"{}\"\n}}{}\n",
+                                 squid::tokenTypeToString(tokenList[i].type), tokenList[i].value,
+                                 i + 1 == tokenList.size() ? "" : ",");
         }
     }
-    tokenJson << "]";
+    tokenJson << "],\n\"typenames\":\n[\n";
+    for (std::set<std::string>::iterator it = s2.typenameRef.begin(); it != s2.typenameRef.end();
+         it++)
+    {
+        tokenJson << "\t\"" << *it << "\"" << (std::distance(s2.typenameRef.begin(), it) == s2.typenameRef.size() - 1 ? "" : ",") << "\n";
+
+    }
+    tokenJson << "]}";
     tokenJson.close();
 }

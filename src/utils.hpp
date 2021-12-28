@@ -1,0 +1,4 @@
+namespace squid
+{
+
+} // namespace squid

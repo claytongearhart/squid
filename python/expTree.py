@@ -1,6 +1,5 @@
 import json
 import queue
-from treelib import Node, Tree
 from collections import deque
 
 
@@ -12,7 +11,7 @@ def parseExpression(tokens):
 
 opinfo = {"operators": ["+", "-", "*", "/", "%", "++", "--", "==", "!=", "<", ">", "<=", ">=", "!", "&&", "!!", "&", "|", "^", "~", "<<", ">>"],
           "precedence": {"=": 0, "||": 1, "&&": 2, "|": 3, "^": 4, "&": 5, "==": 6, "!=": 6, "<": 7, ">": 7, "<=": 7, ">=": 7, "<<": 8, ">>": 8, "+": 9, "-": 9, "*": 10, "/": 10, "%": 10, "!": 11, "~": 11, "++": 12, "--": 12, "::": 13},
-          "associativity": {"++": "LR", "--": "LR", "*": "LR", "/": "LR", "%": "LR", "+": "LR", "-": "LR"}}
+          "associativity": {"++": "LR", "--": "LR", "*": "LR", "/": "LR", "%": "LR", "+": "LR", "-": "LR", "&&": "LR", "==": "LR"}}
 
 
 class binaryTreeNode(object):
