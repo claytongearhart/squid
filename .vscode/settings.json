@@ -102,7 +102,10 @@
         "span": "cpp",
         "__bits": "cpp",
         "any": "cpp",
+<<<<<<< HEAD
         "csignal": "cpp",
+=======
+>>>>>>> 722d2001a8ac1bfcc0513cee0db7f2027881b186
         "filesystem": "cpp"
     }
 }
