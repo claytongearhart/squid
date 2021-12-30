@@ -3,6 +3,10 @@ import expTree
 import numpy as np
 from itertools import zip_longest
 import binarytree
+import IRGen
+import functions as func
+import utils as util
+
 
 treeThing = []
 index = 0
@@ -20,26 +24,23 @@ JsonData = json.load(tokenJsonFile)
 tokenJson = JsonData['tokens']
 typenames = JsonData['typenames']
 
+func.types = typenames
+
 class token:
     def __init__(self, type, value):
         self.type = type
         self.value = value
 
+
 class parser:
     def __init__(self, tokens):
         self.tokens = tokens
         self.symbols = {'uPre': ['--', '++', '~'], 'uPost': ['--', '++'], 'binary': ['+', '-', '*', '/', '%', '==', '!=', '&&', '||']}
-
-    def findNextDelim(self, start):
-        for i in range(start, len(self.tokens)):
-            if (self.tokens[i]['type'] == "Delimiter Token"):
-                return i
-        raise IndexError("Missing Semicolon")
     
     def numExpression(self, start):
         if(False): # Test case
             return False
-        return expTree.parseExpression(self.tokens[int(start): int(self.findNextDelim(start))])
+        return expTree.parseExpression(self.tokens[int(start): int(util.findNextDelim(self.tokens, start))])
             
 
     def varCreation(self, start):
@@ -77,10 +78,6 @@ for entry in tokenJson:
 mainParser = parser(tokenJson)
 
 
-tree = binarytree.build(btToArr(mainParser.numExpression(0).root, []))
-graph = tree.graphviz()
-graph.body
-graph.render()
 
-print()
-print(mainParser.numExpression(0).root)
+print(func.parseFunction(tokenJson).generateIR())
+# print(IRGen.expToIR(mainParser.numExpression(0).root, 16))

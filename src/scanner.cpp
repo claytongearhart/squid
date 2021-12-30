@@ -12,6 +12,8 @@
 #include <utility>
 #include <vector>
 #include <stdexcept>
+#include <math.h>
+
 
 unsigned long findNextNL(std::string &input, unsigned long startingPos)
 {
@@ -19,7 +21,7 @@ unsigned long findNextNL(std::string &input, unsigned long startingPos)
     {
         if (input[i] == '\n')
         {
-            return i;
+            return i; 
         }
     }
     throw std::out_of_range("Source code cannot end with comment");
@@ -66,6 +68,8 @@ enum tokenTypes
     stringToken,
     typeToken,
     varNameToken,
+    funcDefToken,
+    funcCallToken,
     other
 };
 
@@ -75,7 +79,7 @@ class token
     tokenTypes type;
     size_t location;
     std::string value;
-    std::string scopeDepth;
+
 
     token(tokenTypes inputType, std::string inputValue, size_t inputLocation)
     {
@@ -144,9 +148,9 @@ class scanner
 
                              delimiterTokens = {"(", ")", "{", "}", ";", ","},
 
-                             keywordTokens = {"int", "auto", "do", "switch", "return", "class"},
+                             keywordTokens = {"auto", "do", "switch", "return", "class"},
 
-                             typeTokens = {"int", "float", "double"},
+                             typeTokens = {"int", "float", "double", "char"},
 
                              operatorTokens = {"<", ">",  "<=", ">=", "*",  "+",  "-",  "/",
                                                "=", "-=", "*=", "+=", "/=", "++", "--", "==", "&&", "||"};
@@ -243,6 +247,7 @@ class scanner
                : squid::utils::isInStringVec(delimiterTokens, token) ? squid::delimiterToken
                : squid::utils::isInStringVec(keywordTokens, token)   ? squid::keywordToken
                : squid::utils::isInStringVec(boolTokens, token)      ? squid::boolToken
+               : squid::utils::isInStringVec(typeTokens, token)      ? squid::typeToken
                : isString(token)                                     ? squid::stringToken
                : isDigit(token)                                      ? squid::digitToken
                                                                      : squid::other;
@@ -317,7 +322,7 @@ class scanner
     {
         size_t pos = 0, lastPos = 0;
 
-        while ((pos = find_first_of_delim(s, " []{}()<>+-*/&:;.\n\"", lastPos)) !=
+        while ((pos = find_first_of_delim(s, " []{}()<>+-*/&:;.,\n\"", lastPos)) !=
                std::string::npos)
         {
             std::string token = s.substr(lastPos, pos - lastPos + 1);
@@ -390,6 +395,7 @@ class stage2_anal
             }
             else
             {
+                std::cout << squid::tokenTypeToString(input[i - 1].type) << '\n';
                 tokenType = input[i].type;
             }
 
