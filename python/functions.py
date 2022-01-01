@@ -24,7 +24,7 @@ class functionBody:
     def sabina(self):
         rString = ""
         for exp in self.exps:  
-            rString += IR.expToIR(exp.root, 32)
+            rString += IR.expToIR(exp.root, 'int')
         return rString
 
 class function:

@@ -1,9 +1,0 @@
-int main(int s, char d)
-{
-<<<<<<< HEAD
-    x = s + d * s;
-    y = x * s;
-=======
-    x = 2 + 2;
->>>>>>> 722d2001a8ac1bfcc0513cee0db7f2027881b186
-}

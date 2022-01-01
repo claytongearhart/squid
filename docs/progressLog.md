@@ -64,8 +64,7 @@ Over the past few weeks I've had lots of problems with implementing my AST. Firs
 I still can't figure out how to make the AST, I've been thinking about switching my project to something still realted to computer science but not this low level, like a search engine.
 
 ## 2021-12-19
-<<<<<<< HEAD
- I'm going to write a compiler, I figured it out!!
+ I'm going to write a compiler, I figured it out
 
  ## 2021-12-24
  In writing a comment about not needing to make a string branch because I designed strings to be trivial in that case, I wondered if I could use some simple boolean, or even null type that only takes up one bit to represent null type values, per definition the string will always be empty so it would be more efficient to use a smaller are less complex data type.
@@ -74,4 +73,6 @@ I'm going to write a compiler, I figured it out!!
 
 ## 2021-12-24
 In writing a comment about not needing to make a string branch because I designed strings to be trivial in that case, I wondered if I could use some simple boolean, or even null type that only takes up one bit to represent null type values, per definition the string will always be empty so it would be more efficient to use a smaller are less complex data type.
->>>>>>> 722d2001a8ac1bfcc0513cee0db7f2027881b186
+
+## 2021-12-30
+Instead of having compiler compiler to LLVM IR it will compile to C because C is more generalized and has less nuances to account for.

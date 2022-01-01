@@ -62,13 +62,13 @@ import math
 def getOpIns(operator):
     match operator:
         case "+":
-            return "add"
+            return "+"
         case "-":
-            return "sub"
+            return "-"
         case "*":
-            return "mul"
+            return "*"
         case "/":
-            return "sdiv"
+            return "/"
 
 
 def isLeaf(expr):
@@ -82,7 +82,7 @@ def expToIR_R(expr, size, cIR=""):
     if isLeaf(expr.left):
         arg1 = expr.left.data['value']
         if not arg1.isnumeric():
-            arg1 = '%' + str(rm.requestReg(arg1))
+            arg1 = 'v' + str(rm.requestReg(arg1))
     else:
         result = expToIR_R(expr.left, size, "")
         cIR = cIR.join(result['IR'])
@@ -90,17 +90,15 @@ def expToIR_R(expr, size, cIR=""):
     if isLeaf(expr.right):
         arg2 = expr.right.data['value']
         if not arg2.isnumeric():
-            arg2 = '%' + str(rm.requestReg(arg2))
+            arg2 = 'v' + str(rm.requestReg(arg2))
     else:
         result = expToIR_R(expr.right, size, "")
         cIR = cIR.join(result['IR'])
         arg2 = result['reg']
     regv = rm.requestReg()
-    stackSize = size / 8
-    cIR = f'%{regv} = alloca i{size}, align {stackSize}\n'
-    cIR += '%{reg} = {bOP} i{s} {a1}, {a2}\n'.format(
+    cIR += '{s} v{reg} = {a1} {bOP} {a2};\n'.format(
         reg=regv, bOP=getOpIns(expr.data['value']), s=size, a1=arg1, a2=arg2)
-    return {'IR': cIR, 'reg': f'%{regv}'}
+    return {'IR': cIR, 'reg': f'v{regv}'}
 
 
 def expToIR(expr, size):
@@ -122,27 +120,21 @@ def expToIR(expr, size):
 def typeSize(t):
     match t:
         case "int":
-            return 32
+            return "int"
         case "char":
-            return 8
+            return "char"
     return 32
 
 def funcToIR(funcEle):
-    body = ""
-    #Args gen
     args = ""
     for e in funcEle.p.args:
-        s = typeSize(e[0]['value'])
-        args += "i{size} %{name}, ".format(size=s, name=rm.requestReg(e[1]['value']))
-        body += '%{reg} = alloca i{size}, align {st}'.format( reg=rm.requestReg(), size=s, st = s/4)
+        args += "{size} v{name}, ".format(size=typeSize(e[0]['value']), name=rm.requestReg(e[1]['value']))
     if (len(funcEle.p.args) > 0):
         args = args[:-2]
     
     size = typeSize(funcEle.p.type)
     name = funcEle.p.name
-    body  += funcEle.b.sabina()
+    body: str = funcEle.b.sabina()
 
-    for j in 
-
-    IRString = f"define i{size} @{name}({args}){{\n" + body + "}"
+    IRString = f"{size} {name}({args}){{\n" + body + "}"
     return IRString
