@@ -3,10 +3,6 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
-<<<<<<< HEAD
-=======
-#include <limits>
->>>>>>> 722d2001a8ac1bfcc0513cee0db7f2027881b186
 #include <map>
 #include <numeric>
 #include <set>
@@ -14,7 +10,6 @@
 #include <stdint.h>
 #include <string>
 #include <utility>
-<<<<<<< HEAD
 #include <vector>
 #include <stdexcept>
 #include <math.h>
@@ -59,21 +54,10 @@ std::string preprocess(std::string input)
 
     return rString;
 }
-=======
-#include <variant>
-#include <vector>
->>>>>>> 722d2001a8ac1bfcc0513cee0db7f2027881b186
 
 namespace squid
 {
 
-const std::set<std::string> boolTokens{"true", "false"};
-const std::set<std::string> delimiterTokens{"(", ")", "{", "}", ";", ","};
-const std::set<std::string> keywordTokens{"int", "auto", "do", "switch", "return", "class"};
-const std::set<std::string> typeTokens{"int", "float", "double"};
-const std::set<std::string> operatorTokens{"<",  ">",  "<=", ">=", "*",  "+",  "-",  "/",  "=",
-                                           "-=", "*=", "+=", "/=", "++", "--", "==", "%=", "!=",
-                                           "!",  "||", "&&", "&",  "|",  "~",  "^"};
 enum tokenTypes
 {
     boolToken,
@@ -113,9 +97,9 @@ bool isSpace(unsigned char c)
     return (c == ' ' || c == '\n' || c == '\r' || c == '\t' || c == '\v' || c == '\f');
 }
 
-inline bool isInSS(std::set<std::string> a, std::string o)
+bool isInStringVec(std::vector<std::string> a, std::string o)
 {
-    return a.count(o);
+    return std::find(a.begin(), a.end(), o) != a.end();
 }
 bool isInCharArray(std::string a, const char o)
 {
@@ -160,21 +144,26 @@ class scanner
 {
   private:
     std::vector<std::pair<int, int>> stringLocations;
-<<<<<<< HEAD
     std::vector<std::string> boolTokens = {"true", "false"},
 
                              delimiterTokens = {"(", ")", "{", "}", ";", ","},
 
                              keywordTokens = {"auto", "do", "switch", "return", "class"},
 
-                             typeTokens = {"int", "float", "double", "char"},
+                             typeTokens = {"int", "float", "double"},
 
                              operatorTokens = {"<", ">",  "<=", ">=", "*",  "+",  "-",  "/",
                                                "=", "-=", "*=", "+=", "/=", "++", "--", "==", "&&", "||"};
-=======
->>>>>>> 722d2001a8ac1bfcc0513cee0db7f2027881b186
     std::vector<std::pair<std::string, int>> tokenValues;
+    bool isDigit(const std::string &input)
+    {
+        return std::all_of(input.begin(), input.end(), ::isdigit);
+    }
 
+    bool isString(const std::string &input)
+    {
+        return input[0] == '\"' && input[input.size() - 1] == '\"';
+    }
     void findStrings(std::string input)
     {
         std::vector<int> quoteLocations;
@@ -254,7 +243,6 @@ class scanner
     squid::tokenTypes tokenType(std::string token)
     {
 
-<<<<<<< HEAD
         return squid::utils::isInStringVec(operatorTokens, token)    ? squid::operatorToken
                : squid::utils::isInStringVec(delimiterTokens, token) ? squid::delimiterToken
                : squid::utils::isInStringVec(keywordTokens, token)   ? squid::keywordToken
@@ -266,18 +254,6 @@ class scanner
     }
 
     // Tokens would have reminant of last token on current token if size > 1 so this removes it
-=======
-        return squid::utils::isInSS(operatorTokens, token)    ? squid::operatorToken
-               : squid::utils::isInSS(delimiterTokens, token) ? squid::delimiterToken
-               : squid::utils::isInSS(keywordTokens, token)   ? squid::keywordToken
-               : squid::utils::isInSS(boolTokens, token)      ? squid::boolToken
-               : isString(token)                              ? squid::stringToken
-               : isDigit(token)                               ? squid::digitToken
-                                                              : squid::other;
-    }
-
-    // Tokens would have remnant of last token on current token if size < 1 so this removes it
->>>>>>> 722d2001a8ac1bfcc0513cee0db7f2027881b186
     void refineTokens()
     {
         std::vector<squid::token> tempFullTokens;
@@ -342,21 +318,11 @@ class scanner
   public:
     std::vector<squid::token> fullTokens;
 
-    static bool isDigit(const std::string &input)
-    {
-        return std::all_of(input.begin(), input.end(), ::isdigit);
-    }
-
-    static bool isString(const std::string &input)
-    {
-        return input[0] == '\"' && input[input.size() - 1] == '\"';
-    }
-
     void split(std::string s)
     {
         size_t pos = 0, lastPos = 0;
 
-        while ((pos = find_first_of_delim(s, " []{}()<>+-*/&:;.,\n\"", lastPos)) !=
+        while ((pos = find_first_of_delim(s, " []{}()<>+-*/&:;.\n\"", lastPos)) !=
                std::string::npos)
         {
             std::string token = s.substr(lastPos, pos - lastPos + 1);
@@ -448,205 +414,6 @@ class stage2_anal
     std::map<std::string, squid::object> objectRef;
 };
 
-class ramranch
-{
-  public:
-    std::string returnType;
-    enum expType
-    {
-        assignment,
-        condition,
-        funcDef,
-        varDef,
-        classDef
-    } type;
-
-    enum symbols
-    {
-        add,
-        sub,
-        mlp,
-        div,
-        mod,
-        inc,
-        deinc,
-        plus,
-        minus,
-        lOr,
-        lAnd,
-        lNot,
-        bOr,
-        bAnd,
-        bXor,
-        bNot,
-        shl,
-        shr,
-        assigns,
-        equals,
-        notEqual,
-        lessThan,
-        lessOrEqual,
-        greaterThan,
-        greaterOrEqual,
-        pointer
-    };
-
-    struct objRef
-    {
-    };
-
-    using expVec = std::vector<std::variant<ramranch, objRef, symbols, std::string>>;
-
-    expVec exp;
-
-    std::variant<ramranch, objRef, symbols, std::string> symbolMapper(squid::token input)
-    {
-        if (squid::scanner::isDigit(input.value))
-        {
-            return input.value;
-        }
-        else if (squid::utils::isInSS(squid::operatorTokens, input.value))
-        {
-            const std::string &sa = input.value; // Alias, name `sa` is arbitrary
-            using syms = squid::ramranch::symbols;
-            if (sa == "=")
-            {
-                return syms::assigns;
-            }
-            else if (sa == "<")
-            {
-                return syms::lessThan;
-            }
-            else if (sa == ">")
-            {
-                return syms::greaterThan;
-            }
-            else if (sa == "<=")
-            {
-                return syms::lessOrEqual;
-            }
-            else if (sa == ">=")
-            {
-                return syms::greaterOrEqual;
-            }
-            else if (sa == "*")
-            {
-                return syms::pointer;
-            }
-            else if (sa == "+")
-            {
-                return syms::add;
-            }
-            else if (sa == "-")
-            {
-                return syms::sub;
-            }
-            else if (sa == "/")
-            {
-                return syms::div;
-            }
-            else if (sa == "++")
-            {
-                return syms::inc;
-            }
-            else if (sa == "--")
-            {
-                return syms::deinc;
-            }
-            else if (sa == "==")
-            {
-                return syms::equals;
-            }
-            else if (sa == "!=")
-            {
-                return syms::notEqual;
-            }
-            else if (sa == "!")
-            {
-                return syms::lNot;
-            }
-            else if (sa == "~")
-            {
-                return syms::bNot;
-            }
-            else if (sa == "&&")
-            {
-                return syms::lAnd;
-            }
-            else if (sa == "&")
-            {
-                return syms::bAnd;
-            }
-            else if (sa == "|")
-            {
-                return syms::bOr;
-            }
-            else if (sa == "||")
-            {
-                return syms::lOr;
-            }
-            else if (sa == "^")
-            {
-                return syms::bXor;
-            }
-            else
-            {
-                return ""; // Should never get here, I just hate compiler warnings
-            }
-        }
-        else
-        {
-            return ""; // Look 5 lines up
-        }
-    }
-
-    bool isFinalBreakDown(expVec input)
-    {
-        unsigned char opCount = 0, valCount = 0;
-
-        for (unsigned char i = 0; i < input.size(); i++)
-        {
-            if (opCount > 2 || valCount > 2)
-            {
-                return false;
-            }
-            else if (i == std::numeric_limits<unsigned char>::max())
-            {
-                // Error Source: 0x0020B, there should NEVER ~255 tokens that don't have atleast 2
-                // operators or vars/lits
-
-                std::wcerr << "Error: 0x0020B, something bad and unexpected happened. It's not "
-                              "you, it's me";
-            }
-
-            if (input[i].index() == 2)
-            {
-                opCount++;
-            }
-            else if (input[i].index() != 3) // Per definition == 0 || 1
-            {
-                valCount++;
-            }
-            // Per `symbolMapper(...)` string type is trivial so no put in writing case
-            // Writing this made me wonder if 
-        }
-    }
-
-    ramranch(std::vector<squid::token> input)
-    {
-        mommy(input);
-    }
-
-    void mommy(std::vector<squid::token> input)
-    {
-        for (int i = 0; i < input.size(); i++)
-        {
-            exp.push_back(
-                std::variant<ramranch, objRef, symbols, std::string>(symbolMapper(input[i])));
-        }
-    }
-};
-
 } // namespace squid
 
 int main(int argc, char *argv[])
@@ -662,13 +429,8 @@ int main(int argc, char *argv[])
     std::cout << sourceString << '\n';
 
     mainScanner.analyze(sourceString);
-<<<<<<< HEAD
     std::vector<squid::token> tokenList(s2.analSex(mainScanner.fullTokens));
 
-=======
-    std::vector<squid::token> tokenListt = s2.analSex(mainScanner.fullTokens);
-    std::vector<squid::token> tokenList(&tokenListt[7], &tokenListt[10]);
->>>>>>> 722d2001a8ac1bfcc0513cee0db7f2027881b186
 
     for (int i = 0; i < tokenList.size(); i++)
     {
@@ -698,6 +460,4 @@ int main(int argc, char *argv[])
     }
     tokenJson << "]}";
     tokenJson.close();
-
-    squid::ramranch expr(tokenList); // x = 2 + 2 should break into exp(x = exp(2 + 2))
 }
