@@ -4,6 +4,7 @@
 #include <chrono>
 #include <cstdio>
 #include <deque>
+#include <fcntl.h>
 #include <filesystem>
 #include <fmt/format.h>
 #include <fstream>
@@ -14,6 +15,7 @@
 #include <memory>
 #include <numeric>
 #include <random>
+#include <regex>
 #include <set>
 #include <sstream>
 #include <stack>
@@ -24,6 +26,11 @@
 #include <utility>
 #include <variant>
 #include <vector>
+
+bool isNumber(std::string input)
+{
+    return std::regex_match(input, std::regex("\\d*\\.?\\d+"));
+}
 
 std::string exec(const char *cmd)
 {
@@ -41,34 +48,33 @@ std::string exec(const char *cmd)
     return result;
 }
 
-inline bool fileExist(const std::string &fn)
-{
-    struct stat buffer;
-    return (stat(fn.c_str(), &buffer) == 0);
-}
+// inline bool fileExist(const std::string &fn)
+// {
+//     return (stat(fn.c_str(), &buffer) == 0);
+// }
 
-std::string randomString(size_t length)
-{
-    auto randchar = []() -> char {
-        const char charset[] = "0123456789"
-                               "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        const size_t maxIndex = (sizeof(charset) - 1);
-        return charset[rand() % maxIndex];
-    };
-    std::string str(length, 0);
-    std::generate_n(str.begin(), length, randchar);
-    return str;
-}
+// std::string randomString(size_t length)
+// {
+//     auto randchar = []() -> char {
+//         const char charset[] = "0123456789"
+//                                "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+//         const size_t maxIndex = (sizeof(charset) - 1);
+//         return charset[rand() % maxIndex];
+//     };
+//     std::string str(length, 0);
+//     std::generate_n(str.begin(), length, randchar);
+//     return str;
+// }
 
-std::string getFileName(std::string ending)
-{
-    std::string pfName = randomString(rand() % 32);
-    if (fileExist(pfName + ending))
-    {
-        return getFileName(ending);
-    }
-    return pfName + ending;
-}
+// std::string getFileName(std::string ending)
+// {
+//     std::string pfName = randomString(rand() % 32);
+//     if (fileExist(pfName + ending))
+//     {
+//         return getFileName(ending);
+//     }
+//     return pfName + ending;
+// }
 
 unsigned long findNextNL(std::string &input, unsigned long startingPos)
 {
@@ -79,7 +85,7 @@ unsigned long findNextNL(std::string &input, unsigned long startingPos)
             return i;
         }
     }
-    throw std::out_of_range("Source code cannot end with comment");
+    return input.size();
 }
 
 std::string preprocess(std::string input)
@@ -106,7 +112,6 @@ std::string preprocess(std::string input)
                                   return std::isspace(a) && std::isspace(b);
                               }),
                   std::end(rString));
-
     return rString;
 }
 
@@ -127,7 +132,6 @@ enum tokenTypes
     funcCallToken,
     other
 };
-
 class token
 {
   public:
@@ -220,10 +224,9 @@ class scanner
 
                              typeTokens = {"int", "float", "double"},
 
-                             operatorTokens = {
-                                 "<",  ">",  "<=", ">=", "*",  "+",  "-",  "/",  "=",
-                                 "-=", "*=", "+=", "/=", "++", "--", "==", "&&", "||"};
-    std::vector<std::pair<std::string, int>> tokenValues;
+                             operatorTokens = {"<",  ">",  "<=", ">=", "*",  "+",  "-",
+                                               "/",  "=",  "-=", "*=", "+=", "/=", "++",
+                                               "--", "==", "&&", "||", "^"};
     bool isDigit(const std::string &input)
     {
         return std::all_of(input.begin(), input.end(), ::isdigit);
@@ -305,6 +308,10 @@ class scanner
             {
                 return i;
             }
+            else if (i + 1 == input.size())
+            {
+                return i + 1;
+            }
         }
 
         return std::string::npos;
@@ -339,10 +346,19 @@ class scanner
                     fullTokens[i].value.substr(0, fullTokens[i].value.size() - 1);
                 std::string lastTokenValue(1, fullTokens[i].value.back());
 
-                tempFullTokens.push_back(
-                    {tokenType(beginTokenValue), beginTokenValue, fullTokens[i].location});
-                tempFullTokens.push_back(
-                    {tokenType(lastTokenValue), lastTokenValue, fullTokens[i].location});
+                if (beginTokenValue == "." ||
+                    isDigit(std::to_string(beginTokenValue[0])) && isDigit(lastTokenValue))
+                {
+                    tempFullTokens.push_back(
+                        {digitToken, beginTokenValue + lastTokenValue, fullTokens[i].location});
+                }
+                else
+                {
+                    tempFullTokens.push_back(
+                        {tokenType(beginTokenValue), beginTokenValue, fullTokens[i].location});
+                    tempFullTokens.push_back(
+                        {tokenType(lastTokenValue), lastTokenValue, fullTokens[i].location});
+                }
             }
             else
             {
@@ -391,7 +407,7 @@ class scanner
     {
         size_t pos = 0, lastPos = 0;
 
-        while ((pos = find_first_of_delim(s, " []{}()<>+-*/&:;.\n\"", lastPos)) !=
+        while ((pos = find_first_of_delim(s, " []{}()<>+-*/&:;=^\n\"\0", lastPos)) !=
                std::string::npos)
         {
             std::string token = s.substr(lastPos, pos - lastPos + 1);
@@ -414,7 +430,9 @@ class scanner
     void analyze(std::string input)
     {
         findStrings(input);
+        // In here
         split(input);
+        //
         refineTokens();
         sanitizeTokens();
     }
@@ -437,7 +455,7 @@ class stage2_anal
   public:
     std::set<std::string> typenameRef = {"int", "float", "double"};
 
-    std::vector<squid::token> analSex(std::vector<token> input)
+    std::vector<squid::token> format2(std::vector<token> input)
     {
         std::vector<squid::token> tempTokens;
         for (int i = 0; i < input.size(); i++)
@@ -513,31 +531,38 @@ class binaryExpressionTree
 
         if (!exp.empty())
         {
-            insert(exp);
+            if (exp.size() == 1)
+            {
+                root = btNode(exp[0]);
+            }
+            else
+            {
+                insert(exp);
+            }
+            
         }
     }
 
     void insert(std::vector<squid::token> exp)
     {
         std::vector<squid::token> postfixExp = toPostfix(exp);
-        // for (ushort i = 0; i < postfixExp.size(); i++)
-        // {
-        //     std::cout << postfixExp[i].value << "\n";
-        // }
         std::deque<binaryTreeNode> stack;
         squid::token chr = postfixExp[0];
         btNode node(chr);
         stack.push_back(node); // back -> left
 
-        unsigned int i = 0;
-        while (stack.size() != 0)
+        // for (int i = 0; i < postfixExp.size(); i++)
+        // {
+        //     std::cout << postfixExp[i].value << "\n";
+        // }
+
+        unsigned int i = 1;
+        while (stack.size() > 0)
         {
             squid::token chr = postfixExp[i];
 
-            std::cout << squid::tokenTypeToString(postfixExp[i].type) << "\n";
             if (chr.type == squid::operatorToken)
             {
-                std::cout << "l536\n";
                 btNode operatorNode(chr);
                 operatorNode.op = true;
 
@@ -557,7 +582,6 @@ class binaryExpressionTree
             }
             else
             {
-                std::cout << "l556\n";
                 node = btNode(chr);
                 stack.push_back(node);
             }
@@ -567,6 +591,7 @@ class binaryExpressionTree
 
             if (i > 25)
             {
+                //std::cout << "i > 25\n";
                 break;
             }
         }
@@ -585,7 +610,7 @@ class binaryExpressionTree
     {
         std::map<std::string, bool> associativity = {{"++", true}, {"--", true}, {"*", true},
                                                      {"/", true},  {"%", true},  {"+", true},
-                                                     {"-", true}};
+                                                     {"-", true},  {"=", false}};
         return associativity[input];
     }
 
@@ -601,6 +626,7 @@ class binaryExpressionTree
             else
                 return false;
         }
+        return ap > bp ? true : false;
     }
 
     std::vector<squid::token> toPostfix(std::vector<squid::token> infix) // It's you
@@ -610,7 +636,7 @@ class binaryExpressionTree
 
         for (unsigned int i = 0; i < infix.size(); i++)
         {
-                        if (infix[i].type == squid::operatorToken)
+            if (infix[i].type == squid::operatorToken)
             {
                 while (!stack.empty() && stack.top().value != "(" &&
                        higherPrec(stack.top(), infix[i]))
@@ -645,15 +671,226 @@ class binaryExpressionTree
             postfix.push_back(stack.top());
             stack.pop();
         }
-
-
         return postfix;
     }
 };
 
-class solver
+// class function
+// {
+//     public:
+//         std::string baseString;
+//         std::vector<size_t> positions;
+//         std::string compute(std::vector<std::string> args)
+//         {
+//             return fmt::format(baseString, args);
+//         }
+// };
+
+class shell
 {
-    
+  public:
+    void loop()
+    {
+        while (true)
+        {
+            std::cout << "> ";
+            std::string input;
+            std::getline(std::cin, input);
+            if (input == "clear")
+            {
+                std::cout << "\x1B[2J\x1B[H"; // *NIX only
+            }
+            else
+            {
+                std::cout << calc1(input) << "\n";
+            }
+        }
+    }
+
+  private:
+    squid::scanner scan;
+    squid::stage2_anal s2;
+    std::map<std::string, double> varVals;
+
+    bool isFunction(std::vector<squid::token> input)
+    {
+        if (input[1].value == "(")
+        {
+            size_t pScope = 1;
+            unsigned short i = 2;
+            while (pScope > 0)
+            {
+                std::cout << input[i].value << "\n";
+                if (input[i].value == "(")
+                {
+                    pScope++;
+                }
+                else if (input[i].value == ")")
+                {
+                    pScope--;
+                }
+                i++;
+                if (i == std::numeric_limits<unsigned short>::max())
+                {
+                    std::cerr << "Error: Uneven parteneses\n";
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    std::pair<squid::token, size_t> calcFunction(std::vector<squid::token> input)
+    {
+        if (input[0].value == "sqrt")
+        {
+            // std::cout << input[2].value << "\n";
+            std::vector<squid::token> insertResult = {squid::token(squid::delimiterToken, "(", 0)};
+
+            unsigned short pScope = 1;
+            unsigned short i = 2;
+            while (pScope > 0)
+            {
+                if (input[i].value == ")")
+                {
+                    pScope--;
+                }
+                else if (input[i].value == "(")
+                {
+                    pScope++;
+                }
+                insertResult.push_back(input[i]);
+                i++;
+            }
+            insertResult.pop_back();
+            insertResult.push_back(squid::token(squid::delimiterToken, ")", 0));
+
+            //std::cout << insertResult.size() << "\n";
+
+            return std::make_pair<squid::token, size_t>(
+                squid::token(squid::digitToken,
+                             insertResult.size() > 3
+                                 ? std::to_string(sqrt(std::stol(calc2(insertResult))))
+                                 : std::to_string(sqrt(std::stol(insertResult[1].value))),
+                             0),
+                i);
+        }
+        else
+        {
+            return std::make_pair<squid::token, size_t>(squid::token(squid::digitToken, "0", 0), 0);
+        }
+    }
+
+    std::string calc2(std::vector<squid::token> input)
+    {
+        // if (input.size() == 1)
+        // {
+        //     // << "here\n";
+        //     return input[0].value;
+        // }
+        squid::binaryExpressionTree tree(input);
+        for (int i = 0; i < input.size(); i++)
+        {
+            std::cout << input[i].value << "\n";
+        }
+        scan.fullTokens.clear();
+        if (tree.root.has_value())
+        {
+            if (tree.root.value().data.value == "=")
+            {
+                defHandler(std::any_cast<squid::binaryTreeNode>(tree.root.value().left).data.value,
+                           solver(std::any_cast<squid::binaryTreeNode>(tree.root.value().right)));
+                return "Var updated";
+            }
+            else
+            {
+                return std::to_string(solver(tree.root.value()));
+            }
+        }
+        else
+        {
+            return "Error: Invalid tree structure";
+        }
+    }
+    std::string calc1(std::string in)
+    {
+        std::cout << preprocess(in) << "\n";
+        scan.analyze(preprocess(in));
+        std::vector<squid::token> tokens = s2.format2(scan.fullTokens);
+        std::vector<squid::token> tokens2;
+        for (int i = 0; i < tokens.size(); i++)
+        {
+            if (isFunction(std::vector<squid::token>(tokens.begin() + i, tokens.end())))
+            {
+                auto result =
+                    calcFunction(std::vector<squid::token>(tokens.begin() + i, tokens.end()));
+                tokens2.push_back(result.first);
+                i += result.second;
+            }
+            else
+            {
+                tokens2.push_back(tokens[i]);
+            }
+        }
+        return calc2(tokens2);
+    }
+    void defHandler(std::string name, double value)
+    {
+        varVals[name] = value;
+    }
+
+    double solver(squid::binaryTreeNode input)
+    {
+        if (input.isLeaf())
+        {
+            if (isNumber(input.data.value))
+            {
+                return std::stod(input.data.value);
+            }
+            else
+            {
+                if (varVals.find(input.data.value) != varVals.end())
+                {
+                    return varVals[input.data.value];
+                }
+                else
+                {
+                    std::cerr << "Attempted use of undeclared object `" << input.data.value
+                              << "`\n";
+                    loop();
+                }
+            }
+        }
+        else
+        {
+            squid::binaryTreeNode lr[] = {std::any_cast<squid::binaryTreeNode>(input.left),
+                                          std::any_cast<squid::binaryTreeNode>(input.right)};
+
+            if (input.data.value == "+")
+            {
+                return solver(lr[0]) + solver(lr[1]);
+            }
+            else if (input.data.value == "-")
+            {
+                return solver(lr[0]) - solver(lr[1]);
+            }
+            else if (input.data.value == "*")
+            {
+                return solver(lr[0]) * solver(lr[1]);
+            }
+            else if (input.data.value == "/")
+            {
+                return solver(lr[0]) / solver(lr[1]);
+            }
+            else if (input.data.value == "^")
+            {
+                return pow(solver(lr[0]), solver(lr[1]));
+            }
+            return 0.0;
+        }
+        return 0.0;
+    }
 };
 
 } // namespace squid
@@ -661,67 +898,33 @@ class solver
 int main(int argc, char *argv[])
 {
     auto start = std::chrono::high_resolution_clock::now();
-    squid::scanner mainScanner;
-    squid::stage2_anal s2;
+    // squid::scanner mainScanner;
+    // squid::stage2_anal s2;
 
-    std::ifstream source(argv[1]);
-    std::string sourceString = preprocess(
-        std::string((std::istreambuf_iterator<char>(source)), std::istreambuf_iterator<char>()));
+    // std::ifstream source(argv[1]);
+    // std::string sourceString = preprocess(
+    //     std::string((std::istreambuf_iterator<char>(source)), std::istreambuf_iterator<char>()));
 
-    mainScanner.analyze(sourceString);
-    std::vector<squid::token> tokenList(s2.analSex(mainScanner.fullTokens));
+    // // Problem Stems from in here
+    // mainScanner.analyze(sourceString);
+    // std::vector<squid::token> asd = mainScanner.fullTokens;
+    // // End
 
-    for (int i = 0; i < tokenList.size(); i++)
-    {
-        std::cout << tokenList[i].value << " : " << squid::tokenTypeToString(tokenList[i].type)
-                  << '\n';
-    }
-
-    // std::ofstream tokenJson;
-    // std::string fileName = getFileName(".json");
-    // tokenJson.open(fileName);
-    // tokenJson << "{\n\"tokens\": [\n";
-
-    // for (int i = 0; i < tokenList.size(); i++)
+    // for (int i = 0; i < asd.size(); i++)
     // {
-    //     if (tokenList[i].value != "\n")
-    //     {
-    //         tokenJson << fmt::format("{{\n\t\"type\": \"{}\",\n\t\"value\": \"{}\"\n}}{}\n",
-    //                                  squid::tokenTypeToString(tokenList[i].type),
-    //                                  tokenList[i].value, i + 1 == tokenList.size() ? "" : ",");
-    //     }
+    //     std::cout << asd[i].value << " : " << squid::tokenTypeToString(asd[i].type)
+    //               << '\n';
     // }
-    // tokenJson << "],\n\"typenames\":\n[\n";
-    // for (std::set<std::string>::iterator it = s2.typenameRef.begin(); it != s2.typenameRef.end();
-    //      it++)
-    // {
-    //     tokenJson << "\t\"" << *it << "\""
-    //               << (std::distance(s2.typenameRef.begin(), it) == s2.typenameRef.size() - 1 ? ""
-    //                                                                                          :
-    //                                                                                          ",")
-    //               << "\n";
-    // }
-    // tokenJson << "]}";
-    // tokenJson.close();
-    // std::string cCode = exec(("python3 main.py " + fileName).c_str());
-    // std::filesystem::remove(fileName);
- 
-    // std::ofstream cOut;
-    // std::string cFN = getFileName(".c");
-    // cOut.open(cFN);
-    // cOut << cCode;
+    // std::vector<squid::token> tokenList(s2.analSex(mainScanner.fullTokens));
 
-    tokenList.pop_back();
-    tokenList.pop_back();
-    squid::binaryExpressionTree expTree(tokenList);
-    if (expTree.root.has_value())
-    {
-        std::cout << expTree.root.value().data.value << "\n";
-    }
-    else
-    {
-        std::cout << expTree.root.has_value() << "\n";
-    }
+    // squid::binaryExpressionTree expTree(tokenList);
+    // if (expTree.root.has_value())
+    // {
+    //     std::cout << solver(expTree.root.value()) << "\n";
+    // }
+    squid::shell mainShell;
+    mainShell.loop();
+
     // auto end = std::chrono::high_resolution_clock::now();
     // std::chrono::duration<double> duration = end - start;
     // std::cout << "Compiled in " << duration.count() << " seconds\n";
