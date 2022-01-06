@@ -1,5 +1,5 @@
 ## Squid
- A mathematical interpreter written for my [MYP/IB Personal Project](https://www.ibo.org/programmes/middle-years-programme/assessment-and-exams/personal-project/)
+A mathematical interpreter shell written for my [MYP/IB Personal Project](https://www.ibo.org/programmes/middle-years-programme/assessment-and-exams/personal-project/)
 
 
 
