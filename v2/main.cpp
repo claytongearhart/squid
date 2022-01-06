@@ -1,3 +1,4 @@
+#include "terminal.hpp"
 #include <algorithm>
 #include <any>
 #include <array>
@@ -10,6 +11,7 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
+#include <list>
 #include <map>
 #include <math.h>
 #include <memory>
@@ -539,7 +541,6 @@ class binaryExpressionTree
             {
                 insert(exp);
             }
-            
         }
     }
 
@@ -591,7 +592,7 @@ class binaryExpressionTree
 
             if (i > 25)
             {
-                //std::cout << "i > 25\n";
+                // std::cout << "i > 25\n";
                 break;
             }
         }
@@ -686,6 +687,12 @@ class binaryExpressionTree
 //         }
 // };
 
+// struct function
+// {
+//     std::vector<size_t> insertLocs;
+//     std::list<squid::token> funcExp;
+// };
+
 class shell
 {
   public:
@@ -711,16 +718,17 @@ class shell
     squid::scanner scan;
     squid::stage2_anal s2;
     std::map<std::string, double> varVals;
+    // std::map<std::string, squid::function> funcDefs;
 
-    bool isFunction(std::vector<squid::token> input)
+    size_t isFunction(std::vector<squid::token> &input, size_t start)
     {
-        if (input[1].value == "(")
+        if (input[start + 1].value == "(")
         {
             size_t pScope = 1;
-            unsigned short i = 2;
-            while (pScope > 0)
+            unsigned short i = start + 2;
+            while (i < input.size())
             {
-                std::cout << input[i].value << "\n";
+                // std::cout << input[i].value << "\n";
                 if (input[i].value == "(")
                 {
                     pScope++;
@@ -730,22 +738,97 @@ class shell
                     pScope--;
                 }
                 i++;
+                if (pScope == 0)
+                {
+                    return i;
+                }
                 if (i == std::numeric_limits<unsigned short>::max())
                 {
                     std::cerr << "Error: Uneven parteneses\n";
-                    return false;
+                    return 0;
                 }
             }
-            return true;
         }
-        return false;
+        return 0;
     }
+
+    std::optional<double> getConst(std::string input)
+    {
+        if (input == "pi")
+        {
+            return M_PI;
+        }
+        else if (input == "e")
+        {
+            return M_E;
+        }
+        return {};
+    }
+
+    double getVarVal(std::string vName)
+    {
+        if (getConst(vName).has_value())
+        {
+            return getConst(vName).value();
+        }
+        else if (varVals.find(vName) != varVals.end())
+        {
+            return varVals[vName];
+        }
+        else
+        {
+            // std::cout << "x=" << varVals["x"] << "\n";
+            std::cerr << "Attempted use of undeclared variable: `" << vName << "`\n";
+            loop();
+            return 0.0;
+        }
+    }
+
+    // std::pair<squid::token, size_t> calcUFunc(std::vector<squid::token> input)
+    // {
+
+    //     squid::function calledFunc;
+    //     try {
+    //         calledFunc = funcDefs.at(input[0].value);
+    //     }
+    //     catch(...)
+    //     {
+    //         std::cerr << "Attempted use of undeclared function: `" << input[0].value << "`.\n";
+    //         loop();
+    //         return {{}, 0}; // Should never get here
+    //     }
+
+    //     std::vector<squid::token> insertResult = {squid::token(squid::delimiterToken, "(", 0)};
+
+    //     unsigned short pScope = 1;
+    //     unsigned short i = 2;
+    //     while (pScope > 0)
+    //     {
+    //             if (input[i].value == ")")
+    //             {
+    //                 pScope--;
+    //             }
+    //             else if (input[i].value == "(")
+    //             {
+    //                 pScope++;
+    //             }
+    //             insertResult.push_back(input[i]);
+    //             i++;
+    //     }
+    //     insertResult.pop_back();
+    //     insertResult.push_back(squid::token(squid::delimiterToken, ")", 0));
+
+    //     for (unsigned short j = 0; j < calledFunc.insertLocs.size(); j++)
+    //     {
+
+    //     }
+    // }
 
     std::pair<squid::token, size_t> calcFunction(std::vector<squid::token> input)
     {
         if (input[0].value == "sqrt")
         {
-            // std::cout << input[2].value << "\n";
+            //std::cout << input[input.size()].value << "\n";
             std::vector<squid::token> insertResult = {squid::token(squid::delimiterToken, "(", 0)};
 
             unsigned short pScope = 1;
@@ -766,15 +849,26 @@ class shell
             insertResult.pop_back();
             insertResult.push_back(squid::token(squid::delimiterToken, ")", 0));
 
-            //std::cout << insertResult.size() << "\n";
+            // std::cout << insertResult.size() << "\n";
+
+            std::string returnVString;
+            // std::cout << "ir size " << insertResult.size() << "\n";
+            if (insertResult.size() > 3)
+            {
+                returnVString = std::to_string(sqrt(std::stol(calc2(insertResult))));
+            }
+            else if (isNumber(insertResult[1].value))
+            {
+                returnVString = std::to_string(sqrt(std::stol(insertResult[1].value)));
+            }
+            else
+            {
+                // std::cout << "value:" << insertResult[1].value << "end\n";
+                returnVString = std::to_string(sqrt(getVarVal(insertResult[1].value)));
+            }
 
             return std::make_pair<squid::token, size_t>(
-                squid::token(squid::digitToken,
-                             insertResult.size() > 3
-                                 ? std::to_string(sqrt(std::stol(calc2(insertResult))))
-                                 : std::to_string(sqrt(std::stol(insertResult[1].value))),
-                             0),
-                i);
+                squid::token(squid::digitToken, returnVString, 0), i - 1);
         }
         else
         {
@@ -799,9 +893,12 @@ class shell
         {
             if (tree.root.value().data.value == "=")
             {
-                defHandler(std::any_cast<squid::binaryTreeNode>(tree.root.value().left).data.value,
-                           solver(std::any_cast<squid::binaryTreeNode>(tree.root.value().right)));
-                return "Var updated";
+                double varVal =
+                    solver(std::any_cast<squid::binaryTreeNode>(tree.root.value().right));
+                std::string varName =
+                    std::any_cast<squid::binaryTreeNode>(tree.root.value().left).data.value;
+                defHandler(varName, varVal);
+                return "`" + varName + "` modified to " + std::to_string(varVal);
             }
             else
             {
@@ -810,21 +907,22 @@ class shell
         }
         else
         {
-            return "Error: Invalid tree structure";
+            return "Error: Tree does not have root";
         }
     }
     std::string calc1(std::string in)
     {
-        std::cout << preprocess(in) << "\n";
-        scan.analyze(preprocess(in));
+        // std::cout << preprocess(in) << "\n";
+        scan.analyze(preprocess(in) + " ");
         std::vector<squid::token> tokens = s2.format2(scan.fullTokens);
         std::vector<squid::token> tokens2;
         for (int i = 0; i < tokens.size(); i++)
         {
-            if (isFunction(std::vector<squid::token>(tokens.begin() + i, tokens.end())))
+
+            if (size_t funcEnd = isFunction(tokens, i))
             {
-                auto result =
-                    calcFunction(std::vector<squid::token>(tokens.begin() + i, tokens.end()));
+                auto result = calcFunction(
+                    std::vector<squid::token>(tokens.begin() + i, tokens.begin() + funcEnd));
                 tokens2.push_back(result.first);
                 i += result.second;
             }
@@ -850,16 +948,7 @@ class shell
             }
             else
             {
-                if (varVals.find(input.data.value) != varVals.end())
-                {
-                    return varVals[input.data.value];
-                }
-                else
-                {
-                    std::cerr << "Attempted use of undeclared object `" << input.data.value
-                              << "`\n";
-                    loop();
-                }
+                return getVarVal(input.data.value);
             }
         }
         else
