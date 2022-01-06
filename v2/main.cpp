@@ -824,12 +824,9 @@ class shell
     //     }
     // }
 
-    std::pair<squid::token, size_t> calcFunction(std::vector<squid::token> input)
+    std::pair<squid::token, size_t> compSingleValFunc(std::vector<squid::token> input, double (*func)(double))
     {
-        if (input[0].value == "sqrt")
-        {
-            //std::cout << input[input.size()].value << "\n";
-            std::vector<squid::token> insertResult = {squid::token(squid::delimiterToken, "(", 0)};
+        std::vector<squid::token> insertResult = {squid::token(squid::delimiterToken, "(", 0)};
 
             unsigned short pScope = 1;
             unsigned short i = 2;
@@ -855,20 +852,65 @@ class shell
             // std::cout << "ir size " << insertResult.size() << "\n";
             if (insertResult.size() > 3)
             {
-                returnVString = std::to_string(sqrt(std::stol(calc2(insertResult))));
+                returnVString = std::to_string(func(std::stol(calc2(insertResult))));
             }
             else if (isNumber(insertResult[1].value))
             {
-                returnVString = std::to_string(sqrt(std::stol(insertResult[1].value)));
+                returnVString = std::to_string(func(std::stol(insertResult[1].value)));
             }
             else
             {
                 // std::cout << "value:" << insertResult[1].value << "end\n";
-                returnVString = std::to_string(sqrt(getVarVal(insertResult[1].value)));
+                returnVString = std::to_string(func(getVarVal(insertResult[1].value)));
             }
 
-            return std::make_pair<squid::token, size_t>(
-                squid::token(squid::digitToken, returnVString, 0), i - 1);
+            return std::make_pair<squid::token, size_t>(squid::token(squid::digitToken, returnVString, 0), i - 1);
+    }
+
+    std::pair<squid::token, size_t> calcFunction(std::vector<squid::token> input)
+    {
+        if (input[0].value == "sqrt")
+        {
+            // //std::cout << input[input.size()].value << "\n";
+            // std::vector<squid::token> insertResult = {squid::token(squid::delimiterToken, "(", 0)};
+
+            // unsigned short pScope = 1;
+            // unsigned short i = 2;
+            // while (pScope > 0)
+            // {
+            //     if (input[i].value == ")")
+            //     {
+            //         pScope--;
+            //     }
+            //     else if (input[i].value == "(")
+            //     {
+            //         pScope++;
+            //     }
+            //     insertResult.push_back(input[i]);
+            //     i++;
+            // }
+            // insertResult.pop_back();
+            // insertResult.push_back(squid::token(squid::delimiterToken, ")", 0));
+
+            // // std::cout << insertResult.size() << "\n";
+
+            // std::string returnVString;
+            // // std::cout << "ir size " << insertResult.size() << "\n";
+            // if (insertResult.size() > 3)
+            // {
+            //     returnVString = std::to_string(sqrt(std::stol(calc2(insertResult))));
+            // }
+            // else if (isNumber(insertResult[1].value))
+            // {
+            //     returnVString = std::to_string(sqrt(std::stol(insertResult[1].value)));
+            // }
+            // else
+            // {
+            //     // std::cout << "value:" << insertResult[1].value << "end\n";
+            //     returnVString = std::to_string(sqrt(getVarVal(insertResult[1].value)));
+            // }
+
+            return compSingleValFunc(input, sqrt);
         }
         else
         {
@@ -884,10 +926,10 @@ class shell
         //     return input[0].value;
         // }
         squid::binaryExpressionTree tree(input);
-        for (int i = 0; i < input.size(); i++)
-        {
-            std::cout << input[i].value << "\n";
-        }
+        // for (int i = 0; i < input.size(); i++)
+        // {
+        //     std::cout << input[i].value << "\n";
+        // }
         scan.fullTokens.clear();
         if (tree.root.has_value())
         {
