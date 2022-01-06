@@ -4,10 +4,10 @@
 Worked on scanner. Learned about array manipulation(I had always used vectors before) and got to use templates. Started work on checking token type via dynamic programming. Implemented sanitization of raw input.
 
 ### 2021-9-07 1.5 Hours
-Created main function for entry. Continued work on token type checker. Worked on organization and readablity. Wrapped scanner functions in class.
+Created main function for entry. Continued work on token type checker. Worked on organization and readability. Wrapped scanner functions in class.
 
 ### 2021-9-08 3 Hours
-Researched programming lanuage theory, type theory, and semantics. Cleaned up `scanner.hpp` Did lots of debugging, fixed the segfaults. Started work on cleaning up the if else mess of the seperator.
+Researched programming language theory, type theory, and semantics. Cleaned up `scanner.hpp` Did lots of debugging, fixed the segfaults. Started work on cleaning up the if else mess of the separator.
 
 ### 2021-9-09 2 Hours
 Started implementing stage 1 abstract syntax tree. Worked on `tree` class, was a debugging nightmare of pointers. Implmented http://github.com/kpeeters/tree.hh/ instead of custom class.
@@ -62,17 +62,14 @@ Over the past few weeks I've had lots of problems with implementing my AST. Firs
 
 ## 2021-12-02
 I still can't figure out how to make the AST, I've been thinking about switching my project to something still realted to computer science but not this low level, like a search engine.
-
-## 2021-12-19
- I'm going to write a compiler, I figured it out
-
  ## 2021-12-24
  In writing a comment about not needing to make a string branch because I designed strings to be trivial in that case, I wondered if I could use some simple boolean, or even null type that only takes up one bit to represent null type values, per definition the string will always be empty so it would be more efficient to use a smaller are less complex data type.
-=======
-I'm going to write a compiler, I figured it out!!
 
 ## 2021-12-24
 In writing a comment about not needing to make a string branch because I designed strings to be trivial in that case, I wondered if I could use some simple boolean, or even null type that only takes up one bit to represent null type values, per definition the string will always be empty so it would be more efficient to use a smaller are less complex data type.
 
 ## 2021-12-30
 Instead of having compiler compiler to LLVM IR it will compile to C because C is more generalized and has less nuances to account for.
+
+## 2022-1-6
+I decided to write an interpreter instead of a compiler for the sake of simplicity, I'll go more into detail once I have time.

@@ -228,7 +228,7 @@ class scanner
 
                              operatorTokens = {"<",  ">",  "<=", ">=", "*",  "+",  "-",
                                                "/",  "=",  "-=", "*=", "+=", "/=", "++",
-                                               "--", "==", "&&", "||", "^", "%"};
+                                               "--", "==", "&&", "||", "^",  "%"};
     bool isDigit(const std::string &input)
     {
         return std::all_of(input.begin(), input.end(), ::isdigit);
@@ -824,52 +824,54 @@ class shell
     //     }
     // }
 
-    std::pair<squid::token, size_t> compSingleValFunc(std::vector<squid::token> input, double (*func)(double))
+    std::pair<squid::token, size_t> compSingleValFunc(std::vector<squid::token> input,
+                                                      double (*func)(double))
     {
         std::vector<squid::token> insertResult = {squid::token(squid::delimiterToken, "(", 0)};
 
-            unsigned short pScope = 1;
-            unsigned short i = 2;
-            while (pScope > 0)
+        unsigned short pScope = 1;
+        unsigned short i = 2;
+        while (pScope > 0)
+        {
+            if (input[i].value == ")")
             {
-                if (input[i].value == ")")
-                {
-                    pScope--;
-                }
-                else if (input[i].value == "(")
-                {
-                    pScope++;
-                }
-                insertResult.push_back(input[i]);
-                i++;
+                pScope--;
             }
-            insertResult.pop_back();
-            insertResult.push_back(squid::token(squid::delimiterToken, ")", 0));
+            else if (input[i].value == "(")
+            {
+                pScope++;
+            }
+            insertResult.push_back(input[i]);
+            i++;
+        }
+        insertResult.pop_back();
+        insertResult.push_back(squid::token(squid::delimiterToken, ")", 0));
 
-            // std::cout << insertResult.size() << "\n";
+        // std::cout << insertResult.size() << "\n";
 
-            std::string returnVString;
-            // std::cout << "ir size " << insertResult.size() << "\n";
-            if (insertResult.size() > 3)
-            {
-                returnVString = std::to_string(func(std::stol(calc2(insertResult))));
-            }
-            else if (isNumber(insertResult[1].value))
-            {
-                returnVString = std::to_string(func(std::stol(insertResult[1].value)));
-            }
-            else
-            {
-                // std::cout << "value:" << insertResult[1].value << "end\n";
-                returnVString = std::to_string(func(getVarVal(insertResult[1].value)));
-            }
+        std::string returnVString;
+        // std::cout << "ir size " << insertResult.size() << "\n";
+        if (insertResult.size() > 3)
+        {
+            returnVString = std::to_string(func(std::stol(calc2(insertResult))));
+        }
+        else if (isNumber(insertResult[1].value))
+        {
+            returnVString = std::to_string(func(std::stol(insertResult[1].value)));
+        }
+        else
+        {
+            // std::cout << "value:" << insertResult[1].value << "end\n";
+            returnVString = std::to_string(func(getVarVal(insertResult[1].value)));
+        }
 
-            return std::make_pair<squid::token, size_t>(squid::token(squid::digitToken, returnVString, 0), i - 1);
+        return std::make_pair<squid::token, size_t>(
+            squid::token(squid::digitToken, returnVString, 0), i - 1);
     }
 
     std::pair<squid::token, size_t> calcFunction(std::vector<squid::token> input)
     {
-        std::string* const fn = &input[0].value; // fn = function name 
+        std::string *const fn = &input[0].value; // fn = function name
         if (*fn == "sqrt")
         {
             return compSingleValFunc(input, sqrt);
