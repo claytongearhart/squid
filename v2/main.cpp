@@ -31,7 +31,7 @@
 
 bool isNumber(std::string input)
 {
-    return std::regex_match(input, std::regex("\\d*\\.?\\d+"));
+    return std::regex_match(input, std::regex("-?\\d*\\.?\\d+"));
 }
 
 std::string exec(const char *cmd)
@@ -228,7 +228,7 @@ class scanner
 
                              operatorTokens = {"<",  ">",  "<=", ">=", "*",  "+",  "-",
                                                "/",  "=",  "-=", "*=", "+=", "/=", "++",
-                                               "--", "==", "&&", "||", "^"};
+                                               "--", "==", "&&", "||", "^", "%"};
     bool isDigit(const std::string &input)
     {
         return std::all_of(input.begin(), input.end(), ::isdigit);
@@ -409,7 +409,7 @@ class scanner
     {
         size_t pos = 0, lastPos = 0;
 
-        while ((pos = find_first_of_delim(s, " []{}()<>+-*/&:;=^\n\"\0", lastPos)) !=
+        while ((pos = find_first_of_delim(s, " []{}()<>+-*/&:;=^%\n\"\0", lastPos)) !=
                std::string::npos)
         {
             std::string token = s.substr(lastPos, pos - lastPos + 1);
@@ -869,48 +869,22 @@ class shell
 
     std::pair<squid::token, size_t> calcFunction(std::vector<squid::token> input)
     {
-        if (input[0].value == "sqrt")
+        std::string* const fn = &input[0].value; // fn = function name 
+        if (*fn == "sqrt")
         {
-            // //std::cout << input[input.size()].value << "\n";
-            // std::vector<squid::token> insertResult = {squid::token(squid::delimiterToken, "(", 0)};
-
-            // unsigned short pScope = 1;
-            // unsigned short i = 2;
-            // while (pScope > 0)
-            // {
-            //     if (input[i].value == ")")
-            //     {
-            //         pScope--;
-            //     }
-            //     else if (input[i].value == "(")
-            //     {
-            //         pScope++;
-            //     }
-            //     insertResult.push_back(input[i]);
-            //     i++;
-            // }
-            // insertResult.pop_back();
-            // insertResult.push_back(squid::token(squid::delimiterToken, ")", 0));
-
-            // // std::cout << insertResult.size() << "\n";
-
-            // std::string returnVString;
-            // // std::cout << "ir size " << insertResult.size() << "\n";
-            // if (insertResult.size() > 3)
-            // {
-            //     returnVString = std::to_string(sqrt(std::stol(calc2(insertResult))));
-            // }
-            // else if (isNumber(insertResult[1].value))
-            // {
-            //     returnVString = std::to_string(sqrt(std::stol(insertResult[1].value)));
-            // }
-            // else
-            // {
-            //     // std::cout << "value:" << insertResult[1].value << "end\n";
-            //     returnVString = std::to_string(sqrt(getVarVal(insertResult[1].value)));
-            // }
-
             return compSingleValFunc(input, sqrt);
+        }
+        else if (*fn == "sin")
+        {
+            return compSingleValFunc(input, sin);
+        }
+        else if (*fn == "cos")
+        {
+            return compSingleValFunc(input, cos);
+        }
+        else if (*fn == "tan")
+        {
+            return compSingleValFunc(input, tan);
         }
         else
         {
@@ -1017,6 +991,10 @@ class shell
             else if (input.data.value == "^")
             {
                 return pow(solver(lr[0]), solver(lr[1]));
+            }
+            else if (input.data.value == "%")
+            {
+                return (long)solver(lr[0]) % (long)solver(lr[1]);
             }
             return 0.0;
         }
