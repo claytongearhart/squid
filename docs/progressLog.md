@@ -82,3 +82,9 @@ I added color to the shell, it looks nice.
 
 ## 2022-1-13
 I've been working a lot on just little thing that I've ignored, like random seg faults and little things like that. I added support for the boolean operator `==` but my `solver` function will only return double values. I've been brainstorming some solutions, originally I thought of just returning a `std::variant` because it's simple, and I know how to use it well. However I would need to rewrite a lot of code just for a temporary solution. So now I'm planning on making a whole `class` (maybe i'll just use a `struct`) that contains type info, value, anything I decide to add later. Which is why I want to use a class. The only difficult part I have left is to implement user-defined functions. This shouldn't be too hard though because I've been nibbling away at it by doing things such as adding pre-defined function to give me insight on how I should implement user defined functions.
+
+## 2022-1-13 Stuff to remember
+Word to remember for later research - function signature
+https://developer.mozilla.org/en-US/docs/Glossary/Signature/Function seems good
+
+The only thing that defines a function are it's type, qualifiers, name, and args. So maybe first look for qualifiers and then store the follow block
