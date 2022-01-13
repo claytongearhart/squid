@@ -87,4 +87,4 @@ I've been working a lot on just little thing that I've ignored, like random seg 
 Word to remember for later research - function signature
 https://developer.mozilla.org/en-US/docs/Glossary/Signature/Function seems good
 
-The only thing that defines a function are it's type, qualifiers, name, and args. So maybe first look for qualifiers and then store the follow block
+The only thing that defines a function are it's type, qualifiers, name, and args. So maybe first look for qualifiers and then store the follow block. Could use the existing `isFunctionCall()` wrapped in another function that looks at keywords and qualifiers
