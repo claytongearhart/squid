@@ -1000,34 +1000,40 @@ class shell
             squid::binaryTreeNode lr[] = {input.left.has_value() ? std::any_cast<squid::binaryTreeNode>(input.left) : squid::binaryTreeNode(),
                                           input.right.has_value() ? std::any_cast<squid::binaryTreeNode>(input.right) : squid::binaryTreeNode()}; // Not very safe but oh well
 
-            if (input.data.value == "+")
+            std::string &idv = input.data.value;
+            
+            if (idv == "+")
             {
                 return solver(lr[0]) + solver(lr[1]);
             }
-            else if (input.data.value == "-")
+            else if (idv == "-")
             {
                 return solver(lr[0]) - solver(lr[1]);
             }
-            else if (input.data.value == "*")
+            else if (idv == "*")
             {
                 return solver(lr[0]) * solver(lr[1]);
             }
-            else if (input.data.value == "/")
+            else if (idv == "/")
             {
                 return solver(lr[0]) / solver(lr[1]);
             }
-            else if (input.data.value == "^")
+            else if (idv == "^")
             {
                 return pow(solver(lr[0]), solver(lr[1]));
             }
-            else if (input.data.value == "%")
+            else if (idv == "%")
             {
                 return (long)solver(lr[0]) % (long)solver(lr[1]);
             }
-            else if (input.data.value == "++")
+            else if (idv == "++")
             {
                 //std::cout << "l1022\n";
                 return solver(lr[1]) + 1;
+            }
+            else if (idv == "==")
+            {
+                return solver(lr[0]) == solver(lr[1]);
             }
             return 0.0;
         }
