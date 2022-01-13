@@ -61,7 +61,7 @@ I brainstormed ideas for a `word` namespace. I want to utilize inheritance and p
 Over the past few weeks I've had lots of problems with implementing my AST. First I thought to completed rewrite my AST by just having structs with pointers for sub structs to make a binary tree because that's how I solved the problem for my lexer. Then I looked for other ways and stumbled across a way to do it in python, which looked intruging because python is a high level lanuage so it would be easier to implement things like class objects representing words because I can dynamically allocated and define them. To get started on this I first thought to write the IPC layer, which would be started by the master script at runtime and called via a shell pipe to read a file written by the main proccess and would then process and output a processed json or xml file. Once I actually started work I found I couldn't use a shell pipe like I orginally wanted, so I compromised by only invoking the python script once the file had been outputed by the main process. Once I had finished this is only got more difficult. I couldn't even begin to make the actual AST. After sevral hours of googling I still couldn't figure out how to use both binary and unary operators in the same block.
 
 ## 2021-12-02
-I still can't figure out how to make the AST, I've been thinking about switching my project to something still realted to computer science but not this low level, like a search engine.
+I still can't figure out how to make the AST, I've been thinking about switching my project to something still related to computer science but not this low level, like a search engine.
  ## 2021-12-24
  In writing a comment about not needing to make a string branch because I designed strings to be trivial in that case, I wondered if I could use some simple boolean, or even null type that only takes up one bit to represent null type values, per definition the string will always be empty so it would be more efficient to use a smaller are less complex data type.
 
@@ -71,8 +71,14 @@ In writing a comment about not needing to make a string branch because I designe
 ## 2021-12-30
 Instead of having compiler compiler to LLVM IR it will compile to C because C is more generalized and has less nuances to account for.
 
-## 2022-1-6
+## 2021-12-31
 I decided to write an interpreter instead of a compiler for the sake of simplicity, I'll go more into detail once I have time.
 
+## 2022-1-1
+I wrote a shell for the interpreter, it looks awful but it works.
+
+## 2022-1-9
+I added color to the shell, it looks nice.
+
 ## 2022-1-13
-I've been working a lot on just little thing that I've ignored, like random seg faults and little things like that. I added support for the boolean operator `==` but my `solver` function will only return double values. I've been brainstorming some solutions, orginally I thought of just returning a `std::variant` because it's simple, and I know how to use it well. However I would need to rewrite a lot of code just for a temporary solution. So now I'm planning on making a whole `class` (maybe i'll just use a `struct`) that contains type info, value, anything I decide to add later. Which is why I want to use a class. The only difficult part I have left is to implement user-defined functions. This shouldn't be too hard though because I've been nibbling away at it by doing things such as adding pre-defined function to give me insight on how I should implement user defined functions.
+I've been working a lot on just little thing that I've ignored, like random seg faults and little things like that. I added support for the boolean operator `==` but my `solver` function will only return double values. I've been brainstorming some solutions, originally I thought of just returning a `std::variant` because it's simple, and I know how to use it well. However I would need to rewrite a lot of code just for a temporary solution. So now I'm planning on making a whole `class` (maybe i'll just use a `struct`) that contains type info, value, anything I decide to add later. Which is why I want to use a class. The only difficult part I have left is to implement user-defined functions. This shouldn't be too hard though because I've been nibbling away at it by doing things such as adding pre-defined function to give me insight on how I should implement user defined functions.
