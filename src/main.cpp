@@ -552,10 +552,10 @@ class binaryExpressionTree
         btNode node(chr);
         stack.push_back(node); // back -> left
 
-        for (int i = 0; i < postfixExp.size(); i++)
-        {
-            std::cout << postfixExp[i].value << "\n";
-        }
+        // for (int i = 0; i < postfixExp.size(); i++)
+        // {
+        //     std::cout << postfixExp[i].value << "\n";
+        // }
 
         unsigned int i = 1;
         while (stack.size() > 0)
@@ -1028,7 +1028,6 @@ class shell
             }
             else if (idv == "++")
             {
-                //std::cout << "l1022\n";
                 return solver(lr[1]) + 1;
             }
             else if (idv == "==")
