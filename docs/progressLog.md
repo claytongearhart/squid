@@ -88,3 +88,23 @@ Word to remember for later research - function signature
 https://developer.mozilla.org/en-US/docs/Glossary/Signature/Function seems good
 
 The only thing that defines a function are it's type, qualifiers, name, and args. So maybe first look for qualifiers and then store the follow block. Could use the existing `isFunctionCall()` wrapped in another function that looks at keywords and qualifiers
+
+## 2022-1-20
+Worked on function implementation, still couldn't get it to work but got close.
+
+## 2022-1-22
+Continued to work on user defined functions, I had the idea to use the existing `isFunctionCall()` function mentioned before but now for some reason when evaluating the code:
+```cpp
+if (input[decEnd].value == "=")
+{
+    return true;
+}
+```
+
+will work until it becomes true once and then will always return true, I've no idea what could cause this, it doesn't make sense, and will always happen;
+
+## 2022-1-25
+still working on function def, I've rewritten the same code probably 3 times now each differently and it doesn't work
+
+## 2022-1-27
+I got the function definitions working, it's storing it into a map `std::map<std::string, squid::function> funcDefs` and that part works but calling the function raises a libc++abi `std::bad_optional_access` error
