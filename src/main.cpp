@@ -532,6 +532,7 @@ class binaryExpressionTree
 
   public:
     std::optional<btNode> root;
+    std::string stringValue;
     unsigned int size;
     binaryExpressionTree(std::vector<squid::token> exp)
     {
@@ -539,6 +540,11 @@ class binaryExpressionTree
         size = 0;
 
         //std::cout << "Exp size : " << exp.size() << " \n";
+
+        for (unsigned int i = 0; i < exp.size(); i++)
+        {
+            stringValue += exp[0].value;
+        }
 
         if (!exp.empty())
         {
@@ -561,6 +567,7 @@ class binaryExpressionTree
     binaryExpressionTree()
     {
     }
+
 
     void insert(std::vector<squid::token> exp)
     {
@@ -1000,6 +1007,8 @@ class shell
 
             combinedVarVals[functionDefs.at(*fn).varName] = std::stod(input[2].value); // This works
 
+            std::cout << "String value  " << functionDefs.at(*fn).expression.stringValue << "\n";
+
             return std::make_pair<squid::token, size_t>(
                 squid::token(squid::digitToken,
                              std::to_string(solver(functionDefs.at(*fn).expression.root.value(),
@@ -1019,9 +1028,7 @@ class shell
 
         //return false; // Not working but don't want to delete code
 
-        //std::cout << input[decEnd].value << "\n";
-
-        if (input[decEnd].value == "=")
+        if (input[0].value == "=")
         {
 
             //std::cout << input[decEnd - 1].value << "\n";
@@ -1054,13 +1061,18 @@ class shell
             /// std::cout << tokens[i].value << "l918\n";
             if (size_t funcEnd = isFunction(tokens, i))
             {
-                auto funcDecTokCheck = std::vector<squid::token>(tokens.begin() + i, tokens.end());
-                if (isFuncDef(funcDecTokCheck, funcEnd))
+                auto funcDecTokCheck = std::vector<squid::token>(tokens.begin() + funcEnd , tokens.end());
+                if (isFuncDef(funcDecTokCheck, tokens.size()))
                 {
                     // Support for user defined functions, not working, won't return to normal loop properly
-                    //std::cout << "l1042 funcDecTokCheck size : " << funcDecTokCheck.size() << "\n";
+                    std::cout << "l1042 funcDecTokCheck size : " << funcDecTokCheck.size() << "\n";
+                    for (int i = 1; i < funcDecTokCheck.size(); i++)
+                    {
+                        std::cout << "Value :" << funcDecTokCheck[i].value << "\n";
+                    }
+
                     function insertFunc(tokens[i].value,
-                                        squid::binaryExpressionTree(funcDecTokCheck));
+                                        squid::binaryExpressionTree(std::vector<squid::token>(funcDecTokCheck.begin() + 1, funcDecTokCheck.end())));
                     //std::cout << "Function name: " << tokens[i].value << " \n";
                     functionDefs.insert(std::pair<std::string, squid::function> (tokens[i].value, insertFunc));
                     i = tokens.size();

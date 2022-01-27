@@ -107,4 +107,6 @@ will work until it becomes true once and then will always return true, I've no i
 still working on function def, I've rewritten the same code probably 3 times now each differently and it doesn't work
 
 ## 2022-1-27
-I got the function definitions working, it's storing it into a map `std::map<std::string, squid::function> funcDefs` and that part works but calling the function raises a libc++abi `std::bad_optional_access` error
+I got the function definitions working, it's storing it into a map `std::map<std::string, squid::function> funcDefs` and that part works but calling the function raises a libc++abi `std::bad_optional_access` error.
+
+Found out that root does not have a value
