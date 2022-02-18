@@ -1,4 +1,5 @@
 #include "terminal.hpp"
+#include "util.hpp"
 #include <algorithm>
 #include <any>
 #include <array>
@@ -15,12 +16,16 @@
 #include <numeric>
 #include <regex>
 #include <set>
+#include <signal.h>
 #include <sstream>
 #include <stack>
 #include <stdexcept>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string>
 #include <sys/stat.h>
+#include <unistd.h>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -34,49 +39,70 @@ bool isNumber(std::string input)
     return std::regex_match(input, std::regex("-?\\d*\\.?\\d+"));
 }
 
-std::string exec(const char *cmd)
+void quit(int _)
 {
-    std::array<char, 128> buffer;
-    std::string result;
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
-    if (!pipe)
+    if (_ != 31706)
     {
-        throw std::runtime_error("popen() failed!");
+        std::cout << "\n";
     }
-    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr)
-    {
-        result += buffer.data();
-    }
-    return result;
+    auto timet = std::chrono::hh_mm_ss<std::chrono::nanoseconds>(std::chrono::system_clock::now() -
+                                                                 START_TIME);
+    std::cout
+        << "Session lasted "
+        << (timet.hours().count() > 0 ? std::to_string(timet.hours().count()) + "h " : "")
+        << (timet.minutes().count() > 0 ? std::to_string(timet.minutes().count()) + "m " : "")
+        << (timet.seconds().count() > 0 ? std::to_string(timet.seconds().count()) + "s " : "")
+        << std::to_string(
+               std::chrono::duration_cast<std::chrono::milliseconds>(timet.subseconds()).count()) +
+               "ms\n";
+    std::exit(0);
 }
 
-// inline bool fileExist(const std::string &fn)
+// std::string exec(const char *cmd)
 // {
-//     return (stat(fn.c_str(), &buffer) == 0);
-// }
-
-// std::string randomString(size_t length)
-// {
-//     auto randchar = []() -> char {
-//         const char charset[] = "0123456789"
-//                                "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-//         const size_t maxIndex = (sizeof(charset) - 1);
-//         return charset[rand() % maxIndex];
-//     };
-//     std::string str(length, 0);
-//     std::generate_n(str.begin(), length, randchar);
-//     return str;
-// }
-
-// std::string getFileName(std::string ending)
-// {
-//     std::string pfName = randomString(rand() % 32);
-//     if (fileExist(pfName + ending))
+//     std::array<char, 128> buffer;
+//     std::string result;
+//     std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
+//     if (!pipe)
 //     {
-//         return getFileName(ending);
+//         throw std::runtime_error("popen() failed!");
 //     }
-//     return pfName + ending;
+//     while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr)
+//     {
+//         result += buffer.data();
+//     }
+//     return result;
 // }
+
+inline bool fileExist(const std::string &fn, std::string path)
+{
+    struct stat buffer;
+    return (stat(std::string(path + fn.c_str()).c_str(), &buffer) == 0);
+}
+
+std::string randomString(size_t length)
+{
+    auto randchar = []() -> char {
+        const char charset[] = "0123456789"
+                               "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const size_t maxIndex = (sizeof(charset) - 1);
+        return charset[rand() % maxIndex];
+    };
+    std::string str(length, 0);
+    std::generate_n(str.begin(), length, randchar);
+    return str;
+}
+
+std::string getFileName(std::string ending, std::string path)
+{
+    srand(time(0));
+    std::string pfName = randomString(rand() % 32);
+    if (fileExist("/data/" + pfName + ending, path))
+    {
+        return getFileName(ending, path);
+    }
+    return pfName + ending;
+}
 
 unsigned long findNextNL(std::string &input, unsigned long startingPos)
 {
@@ -134,6 +160,27 @@ enum tokenTypes
     funcCallToken,
     other
 };
+
+class debugConsole
+{
+  public:
+    bool inDebugMode;
+    debugConsole()
+    {
+    }
+    debugConsole(bool isInDebugMode)
+    {
+        inDebugMode = isInDebugMode;
+    }
+    void log(std::string input)
+    {
+        if (inDebugMode)
+        {
+            std::cout << "Debug: " << input << "\n";
+        }
+    }
+};
+
 class token
 {
   public:
@@ -212,10 +259,6 @@ std::string tokenTypeToString(tokenTypes input)
     case other:
         return "Unknown Token Type";
     };
-}
-
-std::string getSquidInfo()
-{
 }
 
 class scanner
@@ -537,9 +580,8 @@ class binaryExpressionTree
     binaryExpressionTree(std::vector<squid::token> exp)
     {
         root = {};
-        size = 0;
+        //size = 0;
 
-        //std::cout << "Exp size : " << exp.size() << " \n";
 
         for (unsigned int i = 0; i < exp.size(); i++)
         {
@@ -550,7 +592,6 @@ class binaryExpressionTree
         {
             if (exp.size() == 1)
             {
-
                 root = btNode(exp[0]);
             }
             else
@@ -560,14 +601,13 @@ class binaryExpressionTree
         }
         else
         {
-                            std::cout << "Too small\n";
+            // throw std::length_error("Empty binary tree");
         }
     }
 
     binaryExpressionTree()
     {
     }
-
 
     void insert(std::vector<squid::token> exp)
     {
@@ -712,27 +752,132 @@ class binaryExpressionTree
 class function
 {
   public:
-    std::string varName;
+    std::vector<std::string> varNames;
     squid::binaryExpressionTree expression;
+    std::vector<squid::token> expTokens;
 
-    function(std::string name, squid::binaryExpressionTree exp)
+    function(std::vector<std::string> names, squid::binaryExpressionTree exp,
+             std::vector<squid::token> expressionTokens = {})
     {
-        varName = name;
+        expTokens = expressionTokens;
+        varNames = names;
         expression = exp;
     }
+};
+
+void saveSession(std::map<std::string, double> variables,
+                 std::map<std::string, squid::function> functions, std::string execDir,
+                 std::string saveName)
+{
+    std::ofstream outputFile;
+    outputFile.open(execDir + "/data/" + getFileName(".json", execDir));
+    const time_t curTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    outputFile << "{\n\t\"name\": \"" << saveName << "\",\n\t\"date\": \""
+               << std::put_time(std::localtime(&curTime), "%F %T") << "\",\n\t\"vars\": { ";
+    for (auto it = variables.begin(); it != variables.end(); it++)
+    {
+        outputFile << ("\"" + it->first + "\" : " + std::to_string(it->second) +
+                       (it != std::prev(variables.end(), 1) ? ", " : " "));
+    }
+    outputFile << "},\n\t\"functions\": [\n";
+    for (auto it = functions.begin(); it != functions.end(); it++)
+    {
+        outputFile << "\t\t{\n\t\t\t\"name\": \"" << it->first << "\",\n\t\t\t\"vars\": [" <<
+            [&]() {
+                std::string returnValue;
+                for (unsigned short i = 0; i < it->second.varNames.size(); i++)
+                {
+                    returnValue += "\"" + it->second.varNames[i] + "\"" +
+                                   (i + 1 < it->second.varNames.size() ? ", " : " ");
+                }
+                returnValue.pop_back();
+                return returnValue;
+            }() << "],\n\t\t\t\"expression\": \""
+                   <<
+            [&]() {
+                std::string returnValue;
+                for (unsigned short i = 0; i < it->second.expTokens.size(); i++)
+                {
+                    returnValue += it->second.expTokens[i].value;
+                }
+                returnValue.pop_back();
+                return returnValue;
+            }() << "\"\n\t\t}"
+                   << (it != std::prev(functions.end(), 1) ? ",\n" : "\n");
+    }
+    outputFile << "\t]\n}";
+    outputFile.close();
+}
+
+class json
+{
+  public:
+    json(std::string jsonString)
+    {
+        stringRep = jsonString;
+    }
+
+    squid::json operator[](std::string object)
+    {
+        size_t scope;
+        for (size_t i = 0; i < stringRep.size(); i++)
+        {
+            if (stringRep[i] == '{')
+            {
+                scope++;
+            }
+            else if (stringRep[i] == '}')
+            {
+                scope--;
+            }
+
+            if (scope == 0)
+            {
+                std::string thing;
+                for (short j = 0; j < object.length(); j++)
+                {
+                    thing += stringRep[i + j];
+                }
+
+                if (thing == object)
+                {
+                    return json(stringRep.substr(i + object.length() + 1, [&]() {
+                        for (unsigned short n = i + object.length();; n++)
+                        {
+                            if (stringRep[n] == '}')
+                            {
+                                return n - 1;
+                            }
+                        }
+                    }())); // Lamda to get json ends
+                }
+            }
+        }
+    }
+
+  private:
+    std::string stringRep;
 };
 
 class shell
 {
   public:
+    std::string execPath;
+    shell(bool inDebugMode, std::string path)
+    {
+        execPath = path;
+        squid::debugConsole debug(inDebugMode);
+    }
     void loop()
     {
         while (true)
         {
+        loopJump : {
             std::cout << "\033[1;38;5;19m>\033[0m ";
             std::string input;
             std::getline(std::cin, input);
             processInput(input);
+        }
         }
     }
 
@@ -770,37 +915,59 @@ class shell
         {
             if (commands[1] == "functions")
             {
-               for (auto it = functionDefs.begin(); it != functionDefs.end(); it++)
-               {
-                   std::cout << it->first << "\n";
-               } 
+                for (auto it = functionDefs.begin(); it != functionDefs.end(); it++)
+                {
+                    std::cout << it->first << "\n";
+                }
             }
+        }
+        else if (commands[0] == "save")
+        {
+            std::string saveName;
+            if (commands.size() == 1)
+            {
+                std::cout << "Enter save name: ";
+                std::getline(std::cin, saveName);
+            }
+            saveSession(varVals, functionDefs, execPath, saveName);
         }
         else if (commands[0] == "dump")
         {
             if (commands[1] == "function")
             {
                 squid::function gotFunc = functionDefs.at(commands[2]);
-        
-                std::cout << "Function name " << gotFunc.varName << "\nFunction expresion value " << "NA" << '\n';
+
+                std::cout << "Function name " << commands[2] << "\nFunction expresion value "
+                          << "NA" << '\n';
             }
+        }
+        else if (commands[0] == "path")
+        {
+            std::cout << execPath << "\n";
+        }
+        else if (commands[0] == "reset")
+        {
+            functionDefs.clear();
+            varVals.clear();
         }
         else if (commands[0] == "quit")
         {
-            auto timet = std::chrono::hh_mm_ss<std::chrono::nanoseconds>(
-                std::chrono::system_clock::now() - START_TIME);
-            std::cout << "Session lasted "
-                      << (timet.hours().count() > 0 ? std::to_string(timet.hours().count()) + "h "
-                                                    : "")
-                      << (timet.minutes().count() > 0
-                              ? std::to_string(timet.minutes().count()) + "m "
-                              : "")
-                      << timet.seconds().count() << "s\nNow quitting\n";
-            std::exit(0);
+            quit(31706);
         }
         else
         {
-            std::cout << calc1(input) << "\n";
+            try
+            {
+                std::cout << calc1(input) << "\n";
+            }
+            // catch(const std::length_error& e)
+            // {
+
+            // }
+            catch (const std::exception &e)
+            {
+                std::cerr << "Error: " << e.what() << '\n';
+            }
         }
     }
 
@@ -831,13 +998,12 @@ class shell
                 i++;
                 if (pScope == 0)
                 {
-                    //std::cout << i << '\n';
+                    // std::cout << i << '\n';
                     return i;
                 }
                 if (i == std::numeric_limits<unsigned short>::max())
                 {
-                    std::cerr << "Error: Uneven parteneses\n";
-                    return 0;
+                    throw std::invalid_argument("Uneven parteneses");
                 }
             }
         }
@@ -865,64 +1031,21 @@ class shell
         }
         else if (vvInput.find(vName) != vvInput.end())
         {
-            return vvInput[vName];
+            return vvInput.at(vName);
         }
         else
         {
-            // std::cout << "x=" << varVals["x"] << "\n";
-            std::cerr << "Attempted use of undeclared variable: `" << vName << "`\n";
-            loop();
-            return 0.0;
+            throw std::invalid_argument("Attempted use of undeclared variable: `" + vName + "`");
         }
     }
-
-    // std::pair<squid::token, size_t> calcUFunc(std::vector<squid::token> input)
-    // {
-
-    //     squid::function calledFunc;
-    //     try {
-    //         calledFunc = funcDefs.at(input[0].value);
-    //     }
-    //     catch(...)
-    //     {
-    //         std::cerr << "Attempted use of undeclared function: `" << input[0].value << "`.\n";
-    //         loop();
-    //         return {{}, 0}; // Should never get here
-    //     }
-
-    //     std::vector<squid::token> insertResult = {squid::token(squid::delimiterToken, "(", 0)};
-
-    //     unsigned short pScope = 1;
-    //     unsigned short i = 2;
-    //     while (pScope > 0)
-    //     {
-    //             if (input[i].value == ")")
-    //             {
-    //                 pScope--;
-    //             }
-    //             else if (input[i].value == "(")
-    //             {
-    //                 pScope++;
-    //             }
-    //             insertResult.push_back(input[i]);
-    //             i++;
-    //     }
-    //     insertResult.pop_back();
-    //     insertResult.push_back(squid::token(squid::delimiterToken, ")", 0));
-
-    //     for (unsigned short j = 0; j < calledFunc.insertLocs.size(); j++)
-    //     {
-
-    //     }
-    // }
 
     void help()
     {
         std::cout
             << "\x1B[2J\x1B[HBasic Arithmetic:\n\tType any expression.\n\tEx. "
                "2+2\nVariables:\n\tVariables are defined using the `=` character\n\tEx. x=2, "
-               "y=2+2\nFunctions:\n\tSo far custom functions aren't suppported,\n\tbut you can use "
-               "the functions sqrt, sin, cos, & tan\n\tEx. sin(2+2), cos(sin(pi/2))\n";
+               "y=2+2\nFunctions:\n\tPredefined functions are sqrt, sin, cos, & tan,\n\tand you "
+               "can define your own functions\n\tEx. sin(2+2), cos(sin(pi/2)), f(x)=x+2, f(2)\n";
     }
 
     std::pair<squid::token, size_t> compSingleValFunc(std::vector<squid::token> input,
@@ -946,7 +1069,7 @@ class shell
             i++;
         }
         insertResult.pop_back();
-        insertResult.push_back(squid::token(squid::delimiterToken, ")", 0));
+        insertResult.push_back(squid::token(squid::delimiterToken, ")", input.size()));
 
         // std::cout << insertResult.size() << "\n";
 
@@ -976,7 +1099,8 @@ class shell
 
     std::pair<squid::token, size_t> calcFunction(std::vector<squid::token> input)
     {
-        //std::cout << "l955\n";
+        std::cout << "1102\n";
+        size_t inputSize = input.size();
         std::string *const fn = &input[0].value; // fn = function name
         if (*fn == "sqrt")
         {
@@ -1002,23 +1126,32 @@ class shell
         {
             // std::map<std::string, double> funcVarMap;
             // funcVarMap[functionDefs[*fn].varName] = std::stod(input[2].value);
-            //std::cout << "l979\n";
             std::map<std::string, double> combinedVarVals(varVals);
 
-            combinedVarVals[functionDefs.at(*fn).varName] = std::stod(input[2].value); // This works
+            squid::binaryExpressionTree inputedNode = squid::binaryExpressionTree(
+                std::vector<squid::token>(input.begin() + 2, input.end() - 1));
 
-            std::cout << "String value  " << functionDefs.at(*fn).expression.stringValue << "\n";
+            combinedVarVals[functionDefs.at(*fn).varNames[0]] =
+                solver(inputedNode.root.value(), varVals);
+
+            // std::cout << "Var values " << combinedVarVals[functionDefs.at(*fn).varName] << "\n";
+            // std::cout << "Expression root" <<
+            // functionDefs.at(*fn).expression.root.value().data.value << "\n";
+
+            std::cout << "Result : "
+                      << solver(functionDefs.at(*fn).expression.root.value(), combinedVarVals)
+                      << "\n";
 
             return std::make_pair<squid::token, size_t>(
                 squid::token(squid::digitToken,
                              std::to_string(solver(functionDefs.at(*fn).expression.root.value(),
                                                    combinedVarVals)),
-                             0),
-                0);
+                             input.size()),
+                input.size());
         }
         else
         {
-            //std::cout << *fn << " " << functionDefs.count(*fn) << "\n";
+            // std::cout << *fn << " " << functionDefs.count(*fn) << "\n";
             return std::make_pair<squid::token, size_t>(squid::token(squid::digitToken, "0", 0), 0);
         }
     }
@@ -1026,22 +1159,15 @@ class shell
     bool isFuncDef(std::vector<squid::token> input, size_t decEnd)
     {
 
-        //return false; // Not working but don't want to delete code
-
-        if (input[0].value == "=")
+        if (input.size() != 0 && input[0].value == "=")
         {
 
-            //std::cout << input[decEnd - 1].value << "\n";
             return true;
         }
         else
         {
             return false;
         }
-    }
-
-    double compFunc(squid::binaryExpressionTree, std::map<std::string, double> vars)
-    {
     }
 
     std::string calc2(std::vector<squid::token> tokens)
@@ -1061,22 +1187,33 @@ class shell
             /// std::cout << tokens[i].value << "l918\n";
             if (size_t funcEnd = isFunction(tokens, i))
             {
-                auto funcDecTokCheck = std::vector<squid::token>(tokens.begin() + funcEnd , tokens.end());
+                auto funcDecTokCheck =
+                    std::vector<squid::token>(tokens.begin() + funcEnd, tokens.end());
+                // std::cout << "l1063\n";
                 if (isFuncDef(funcDecTokCheck, tokens.size()))
                 {
-                    // Support for user defined functions, not working, won't return to normal loop properly
-                    std::cout << "l1042 funcDecTokCheck size : " << funcDecTokCheck.size() << "\n";
-                    for (int i = 1; i < funcDecTokCheck.size(); i++)
-                    {
-                        std::cout << "Value :" << funcDecTokCheck[i].value << "\n";
-                    }
+                    // Support for user defined functions, not working, won't return to normal loop
+                    // properly std::cout << "l1042 funcDecTokCheck size : " <<
+                    // funcDecTokCheck.size() << "\n";
 
-                    function insertFunc(tokens[i].value,
-                                        squid::binaryExpressionTree(std::vector<squid::token>(funcDecTokCheck.begin() + 1, funcDecTokCheck.end())));
-                    //std::cout << "Function name: " << tokens[i].value << " \n";
-                    functionDefs.insert(std::pair<std::string, squid::function> (tokens[i].value, insertFunc));
+                    // funcDecTokCheck.push_back(squid::token(squid::operatorToken, "+", 0));
+                    // funcDecTokCheck.push_back(squid::token(squid::digitToken, "0", 0));
+
+                    auto expressionVector(std::vector<squid::token>(funcDecTokCheck.begin() + 1,
+                                                                    funcDecTokCheck.end()));
+
+                    std::cout << "Expression vector size: " << expressionVector.size() << "\n";
+                    function insertFunc({tokens[funcEnd + 1].value},
+                                        squid::binaryExpressionTree(expressionVector),
+                                        expressionVector);
+
+                    if (functionDefs.count(tokens[i].value) > 0)
+                    {
+                        functionDefs.erase(tokens[i].value);
+                    }
+                    functionDefs.insert(
+                        std::pair<std::string, squid::function>(tokens[i].value, insertFunc));
                     i = tokens.size();
-                    break;
                 }
                 else
                 {
@@ -1084,13 +1221,15 @@ class shell
                         std::vector<squid::token>(tokens.begin() + i, tokens.begin() + funcEnd));
                     tokens2.push_back(result.first);
                     i += result.second;
-               }
+                }
             }
             else
             {
                 tokens2.push_back(tokens[i]);
             }
         }
+    skip : {
+    }
         squid::binaryExpressionTree tree(tokens2);
         // std::cout << "l939\n";
         scan.fullTokens.clear();
@@ -1107,12 +1246,23 @@ class shell
             }
             else
             {
-                return std::to_string(solver(tree.root.value(), varVals));
+                std::string str = std::to_string(solver(tree.root.value(), varVals));
+                str.erase(str.find_last_not_of('0') + 1, std::string::npos);
+                str.erase(str.find_last_not_of('.') + 1, std::string::npos);
+                if (str.find(".") == std::string::npos && str != "nan")
+                {
+                    str += ".0";
+                }
+                if (str == "nan")
+                {
+                    return "Not a Number";
+                }
+                return str;
             }
         }
         else
         {
-            return "Error: Tree does not have root";
+            throw std::out_of_range("Tree does not have root");
         }
     }
     std::string calc1(std::string in)
@@ -1135,10 +1285,12 @@ class shell
         {
             if (isNumber(input.data.value))
             {
+                // std::cout << input.data.value << "\n";
                 return std::stod(input.data.value);
             }
             else
             {
+                // std::cout << "l1147\n";
                 return getVarVal(input.data.value, varValues);
             }
         }
@@ -1154,6 +1306,7 @@ class shell
 
             if (idv == "+")
             {
+                // std::cout << "l1161\n";
                 return solver(lr[0], varValues) + solver(lr[1], varValues);
             }
             else if (idv == "-")
@@ -1192,7 +1345,7 @@ class shell
 
 } // namespace squid
 
-int main(int argc, char *argv[])
+auto main(int argc, char *argv[]) -> int
 {
     // auto start = std::chrono::high_resolution_clock::now();
     //  squid::scanner mainScanner;
@@ -1219,16 +1372,18 @@ int main(int argc, char *argv[])
     // {
     //     std::cout << solver(expTree.root.value()) << "\n";
     // }
+    signal(SIGINT, quit);
     START_TIME = std::chrono::system_clock::now();
 
-    squid::shell mainShell;
+    squid::shell mainShell(argc > 1 ? strcmp(argv[1], "-d") == 0 ? true : false : false,
+                           paths::getExecutableDir());
 
     if (argc > 1)
     {
         if (std::string(argv[1]) == "-d")
         {
             std::cout << "\033[1;38;5;19mSquid " << VERSION
-                      << " DEV\033[0m\nType `help` for more details\n";
+                      << " DEBUG\033[0m\nType `help` for more details\n";
             mainShell.loop();
         }
         else
