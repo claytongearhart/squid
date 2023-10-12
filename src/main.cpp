@@ -1412,7 +1412,7 @@ auto main(int argc, char *argv[]) -> int
     }
     else
     {
-        std::cout << "\033[1;38;5;19mSquid 0.2.1\033[0m\nType `help` for more details\n";
+        std::cout << "\033[1;38;5;19mSquid " << VERSION << "\033[0m\nType `help` for more details\n";
 
         mainShell.loop();
     }
