@@ -30,7 +30,7 @@
 #include <variant>
 #include <vector>
 
-#define VERSION "0.2.1"
+#define VERSION "1.0.0"
 #define SQUID_BLUE "\033[1;38;5;19m>"
 
 std::chrono::system_clock::time_point START_TIME;
