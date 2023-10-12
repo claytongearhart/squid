@@ -204,7 +204,12 @@ class token
         location = inv.location;
         value = inv.value;
     }
+
 };
+
+std::ostream &operator<<(std::ostream &os, token const &m) { 
+    return os << "Value: " << m.value;
+}
 
 namespace utils
 {
@@ -1161,7 +1166,6 @@ class shell
 
         if (input.size() != 0 && input[0].value == "=")
         {
-
             return true;
         }
         else
@@ -1201,6 +1205,11 @@ class shell
 
                     auto expressionVector(std::vector<squid::token>(funcDecTokCheck.begin() + 1,
                                                                     funcDecTokCheck.end()));
+
+                    for (const auto ele: expressionVector)
+                {
+                    std::cout << ele << '\n';
+                }
 
                     std::cout << "Expression vector size: " << expressionVector.size() << "\n";
                     function insertFunc({tokens[funcEnd + 1].value},
@@ -1249,13 +1258,17 @@ class shell
                 std::string str = std::to_string(solver(tree.root.value(), varVals));
                 str.erase(str.find_last_not_of('0') + 1, std::string::npos);
                 str.erase(str.find_last_not_of('.') + 1, std::string::npos);
-                if (str.find(".") == std::string::npos && str != "nan")
+                if (str.find(".") == std::string::npos && str != "nan" && str != "inf")
                 {
                     str += ".0";
                 }
-                if (str == "nan")
+                else if (str == "nan")
                 {
                     return "Not a Number";
+                }
+                else if (str == "inf")
+                {
+                    return "Infinity";
                 }
                 return str;
             }
